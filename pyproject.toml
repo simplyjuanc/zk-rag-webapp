@@ -1,0 +1,23 @@
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+preview = true
+select = ["E", "F", "I", "UP"]                      # Errors, Pyflakes, Import sorting, PyUpgrade
+exclude = ["build", "dist", ".venv", "__pycache__"]
+
+
+[tool.mypy]
+strict_optional = true
+python_version = "3.13"
+strict = true
+ignore_missing_imports = false
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_unimported = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_optional = true
+show_error_codes = true
