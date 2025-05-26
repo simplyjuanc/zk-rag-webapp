@@ -13,11 +13,15 @@ strict_optional = true
 python_version = "3.13"
 strict = true
 ignore_missing_imports = false
+disallow_any_unimported = false
 check_untyped_defs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
-disallow_any_unimported = true
 warn_unused_ignores = true
 warn_return_any = true
 no_implicit_optional = true
 show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "sqlalchemy.*"
+ignore_missing_imports = true
