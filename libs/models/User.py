@@ -1,19 +1,35 @@
+from typing import Annotated, Optional
 from uuid import uuid4
 from pydantic import BaseModel, Field
 
-
-class User(BaseModel):
-    id: str = Field(default_factory=lambda: uuid4().hex)
-    username: str = Field(..., min_length=3, max_length=50)
-    email: str = Field(
-        ...,
-        description="User's email address",
-        pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$",
-        examples=["john.doe@example.mail"],
-    )
-    first_name: str | None = None
-    last_name: str | None = None
+from libs.storage.models.user import UserStatus
 
 
-class RegisteredUser(User):
-    hashed_password: str
+class BaseUser(BaseModel):
+    email: Annotated[
+        str,
+        Field(
+            ...,
+            description="User's email address",
+            pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$",
+            examples=["john.doe@example.mail"],
+        ),
+    ]
+    first_name: Annotated[Optional[str], Field(default=None)]
+    last_name: Annotated[Optional[str], Field(default=None)]
+
+
+class UserCreateRequest(BaseUser):
+    password: Annotated[str, Field(..., min_length=8, max_length=128)]
+
+
+class RegisteredUser(BaseUser):
+    id: Annotated[str, Field(default_factory=lambda: uuid4().hex)]
+    status: Annotated[
+        str,
+        Field(
+            default="unverified",
+            examples=["unverified", "active", "inactive"],
+            description="User's account status",
+        ),
+    ] = UserStatus.UNVERIFIED
