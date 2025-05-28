@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from apps.api.routes.auth import AuthRouter
+from apps.backend.api.v1.auth import AuthRouter
 from libs.storage.db import init_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
