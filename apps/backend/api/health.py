@@ -6,7 +6,7 @@ from config import settings
 HealthRouter = APIRouter(prefix="/health", tags=["Health"])
 
 
-@HealthRouter.get("", summary="Basic Health Check")
+@HealthRouter.get("", summary="Basic Health Check", include_in_schema=False)
 async def health_check() -> Dict[str, Any]:
     """
     Basic health check endpoint that returns API status and timestamp.

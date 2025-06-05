@@ -9,7 +9,7 @@ from libs.models.User import User, UserCreateRequest, Token
 from libs.storage.repositories.user import user_repo_injection
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/user/token")
 
 AuthRouter = APIRouter(
     prefix="/v1/user",
@@ -22,7 +22,7 @@ class UserLoginRequest(BaseModel):
     password: str = Field(..., min_length=8, max_length=128)
 
 
-@AuthRouter.get("/", response_model=User)
+@AuthRouter.get("/me", response_model=User)
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     user_service: user_service_injection,
@@ -42,7 +42,7 @@ async def register_user(
 async def login_user(
     login_request: UserLoginRequest,
     user_service: user_service_injection,
-) -> User:
+) -> Token:
     return user_service.login_user(login_request.email, login_request.password)
 
 

@@ -1,9 +1,10 @@
+from collections.abc import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
+from apps.backend.api.health import HealthRouter
 from apps.backend.api.v1.auth import AuthRouter
 from libs.storage.db import init_db
 
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(AuthRouter)
+    app.include_router(HealthRouter)
 
     return app
 
