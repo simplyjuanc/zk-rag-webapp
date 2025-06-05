@@ -2,13 +2,13 @@ from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
+from config import settings
 from libs.storage.models.base import Base
 
 db = create_engine(
-    "sqlite:///:memory:",
+    url=str(settings.database_url),
     echo=True,
     poolclass=StaticPool,
-    connect_args={"check_same_thread": False},
 )
 
 SessionLocal = sessionmaker(

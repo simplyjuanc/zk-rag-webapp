@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     debug: bool = False
     sqlalchemy_use_native_typing: bool = True
 
+    postgres_user: str
+    postgres_password: str
+    postgres_db: str
     database_url: PostgresDsn
 
     # Security
