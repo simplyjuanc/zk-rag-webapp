@@ -1,5 +1,9 @@
-from .User import BaseUser, UserCreateRequest, User, Token, JwtPayload
-from .pipeline import (
+"""Pipeline models package.
+
+This package contains all the Pydantic models used by the data pipeline.
+"""
+
+from .models import (
     PipelineConfig,
     FileEvent,
     FileEventType,
@@ -19,14 +23,10 @@ from .pipeline import (
 )
 
 __all__ = [
-    "BaseUser",
-    "UserCreateRequest", 
-    "User",
-    "Token",
-    "JwtPayload",
     "PipelineConfig",
     "FileEvent",
-    "DocumentMetadata",
+    "FileEventType",
+    "DocumentMetadata", 
     "DocumentChunk",
     "EmbeddedChunk",
     "ProcessedDocument",
@@ -39,4 +39,4 @@ __all__ = [
     "DocumentMetadata",
     "ChunkData",
     "ParsedContent"
-]
+] 

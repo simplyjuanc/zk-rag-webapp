@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 from uuid import uuid4
 from pydantic import BaseModel, EmailStr, Field
 
-from libs.storage.models.user import UserStatus
+from libs.storage.tables.user import UserStatus
 
 
 class BaseUser(BaseModel):

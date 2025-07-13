@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
 from config import settings
-from libs.storage.models.base import Base
+from libs.storage.tables.base import Base
 
 db = create_engine(
     url=str(settings.database_url),

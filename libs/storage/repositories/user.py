@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from libs.storage.db import get_db_session
-from libs.storage.models.user import User as DaoUser, UserStatus
+from libs.storage.tables.user import User as DaoUser, UserStatus
 from libs.models.User import User, BaseUser
 
 

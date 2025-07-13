@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from uuid import uuid4
 
-from libs.storage.models.base import Base
+from libs.storage.tables.base import Base
 from enum import Enum
 
 

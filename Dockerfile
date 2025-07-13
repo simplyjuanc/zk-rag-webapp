@@ -1,4 +1,37 @@
-FROM python:alpine@sha256:452682e4648deafe431ad2f2391d726d7c52f0ff291be8bd4074b10379bb89ff
+# Multi-stage build for optimization
+FROM python:alpine@sha256:b4d299311845147e7e47c970566906caf8378a1f04e5d3de65b5f2e834f8e3bf AS builder
+
+# Install build dependencies
+RUN apk add --no-cache \
+  gcc \
+  musl-dev \
+  libffi-dev \
+  openssl-dev \
+  postgresql-dev \
+  python3-dev \
+  curl
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install requirements
+COPY requirements-prod.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+  pip install --no-cache-dir -r requirements-prod.txt
+
+# Production stage
+FROM python:alpine@sha256:b4d299311845147e7e47c970566906caf8378a1f04e5d3de65b5f2e834f8e3bf
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+  libpq \
+  curl \
+  && rm -rf /var/cache/apk/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Reduce unnecessary automatic behavior in immutable containers
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -6,20 +39,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
   PIP_NO_CACHE_DIR=1 \
   PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install curl for health checks
-RUN apk add --no-cache curl
-
-# Create non-root user to change to later
 RUN addgroup -S appuser && adduser -S -G appuser appuser
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-RUN chown -R appuser:appuser /app
+COPY --chown=appuser:appuser . .
 USER appuser
 
 EXPOSE 8000
