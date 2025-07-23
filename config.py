@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     allowed_hosts: list[str] = ["*"]
     cors_origins: list[AnyHttpUrl] = []
 
+    # AI Services
     open_ai_api_key: str
+    ollama_url: AnyHttpUrl
 
     model_config = SettingsConfigDict(
         env_file=".env",

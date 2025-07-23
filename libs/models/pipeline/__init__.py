@@ -19,14 +19,16 @@ from .models import (
     ProcessedContent,
     DocumentMetadata,
     ParsedContent,
-    ChunkData,
+    DocumentChunk,
+    EmbeddedChunk,
+    DocumentChunk,
 )
 
 __all__ = [
     "PipelineConfig",
     "FileEvent",
     "FileEventType",
-    "DocumentMetadata", 
+    "DocumentMetadata",
     "DocumentChunk",
     "EmbeddedChunk",
     "ProcessedDocument",
@@ -38,5 +40,5 @@ __all__ = [
     "ProcessedContent",
     "DocumentMetadata",
     "ParsedContent",
-    "ChunkData",
-] 
+    "DocumentChunk",
+]

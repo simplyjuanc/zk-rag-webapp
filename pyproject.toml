@@ -46,6 +46,7 @@ dependencies = [
   "python-multipart==0.0.20",
   "PyYAML==6.0.2",
   "python-frontmatter==1.1.0",
+  "requests==2.32.3",
   "rich==14.0.0",
   "rich-toolkit==0.14.6",
   "rsa==4.9.1",

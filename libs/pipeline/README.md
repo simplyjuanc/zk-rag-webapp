@@ -102,7 +102,7 @@ The pipeline accepts the following configuration:
 2. Run the example script:
 
    ```bash
-   python scripts/run_pipeline.py
+   python scripts/main.py
    ```
 
 3. Add or modify markdown files in the `assets` directory to see the pipeline in action.

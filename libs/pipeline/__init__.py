@@ -6,9 +6,9 @@ from .pipeline import DataPipeline
 from .config import PipelineConfig, load_config
 
 __all__ = [
-    "FileWatcher", 
-    "DocumentEmbedder", 
+    "FileWatcher",
+    "DocumentEmbedder",
     "DataPipeline",
     "PipelineConfig",
-    "load_config"
-] 
+    "load_config",
+]
