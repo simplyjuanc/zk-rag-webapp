@@ -2,6 +2,9 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
+
+from pydantic_core import ValidationError
+
 from libs.models.pipeline import FileMetadata, FrontmatterMetadata
 
 LIST_KEYS = {'author', 'category', 'type', 'tags'}
@@ -9,7 +12,7 @@ LIST_KEYS = {'author', 'category', 'type', 'tags'}
 
 logger = logging.getLogger(__name__)
 
-class MetadataExtractor:
+class MetadataValidator:
     """Extracts metadata from files and content."""
     date_format = r'\s*(\d{4}-\d{2}-\d{2})'
 
@@ -36,15 +39,15 @@ class MetadataExtractor:
             content_modified_at=datetime.fromtimestamp(stat.st_mtime),
         )
 
-    def extract_normalised_metadata(self, metadata_dict: Dict[str, Any], content: str) -> FrontmatterMetadata:
-        """Extract metadata from content and normalise the dictionary."""
-        logger.info(f"Metadata: {metadata_dict}")
-        normalised_metadata_dict = self.normalize_metadata_dict(metadata_dict)
-        return FrontmatterMetadata.model_validate(normalised_metadata_dict)
+    def validate_metadata(self, metadata: Dict[str, Any], content: str) -> FrontmatterMetadata:
+        normalised_metadata = FrontmatterMetadata.model_validate(self.__normalise_metadata(metadata))
+        logger.info(f"Valid metadata for: {normalised_metadata.title}")
+        return normalised_metadata
+
+
     
 
-    def normalize_metadata_dict(self, metadata_dict: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize the metadata dictionary."""
+    def __normalise_metadata(self, metadata_dict: Dict[str, Any]) -> Dict[str, Any]:
         for key, value in metadata_dict.items():
             if value is None:
                 continue

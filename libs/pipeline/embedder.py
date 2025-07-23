@@ -49,6 +49,7 @@ class OllamaEmbedder:
             
             data = response.json()
             embedding = data.get("embedding", [])
+
             
             if not embedding:
                 raise ValueError("No embedding returned from Ollama")
@@ -134,7 +135,6 @@ class DocumentEmbedder:
         return embedded_chunks
     
     async def embed_query(self, query: str) -> EmbeddingResult:
-        """Embed a search query."""
         return await self.embedder.embed_text(query)
     
     async def close(self) -> None:

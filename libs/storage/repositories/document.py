@@ -10,8 +10,10 @@ class DocumentRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_document(self, doc_data: DocumentDB) -> DocumentDB:
-        doc = Document(**doc_data.model_dump(exclude_unset=True))
+    def create_document(self, document: DocumentDB) -> DocumentDB:
+        # Exclude chunks field when creating SQLAlchemy model since it's a relationship
+        doc_data = document.model_dump(exclude_unset=True, exclude={'chunks'})
+        doc = Document(**doc_data)
         self.session.add(doc)
         self.session.commit()
         self.session.refresh(doc)
@@ -37,4 +39,4 @@ def get_document_repository(session: Session = Depends(get_db_session)) -> Docum
     return DocumentRepository(session)
 
 
-document_repo_injection = Annotated[DocumentRepository, Depends(get_document_repository)] 
+document_repo_injection = Annotated[DocumentRepository, Depends(get_document_repository)]

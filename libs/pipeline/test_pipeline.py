@@ -155,7 +155,7 @@ async def main() -> None:
     if success:
         print("✓ All tests passed!")
         print("\nThe pipeline is ready to use.")
-        print("Run 'python scripts/run_pipeline.py' to start the pipeline.")
+        print("Run 'python scripts/main.py' to start the pipeline.")
     else:
         print("✗ Some tests failed.")
         print("Please check the error messages above.")

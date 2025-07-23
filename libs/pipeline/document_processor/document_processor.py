@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 import logging
 from libs.models.pipeline import DocumentMetadata, ProcessedDocument, DocumentChunk
-from .metadata_extractor import MetadataExtractor
+from .metadata_extractor import MetadataValidator
 from .content_parser import MarkdownParser
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ class DocumentProcessor:
     """Processes Markdown documents and extracts all relevant information."""
     
     def __init__(self) -> None:
-        self.metadata_extractor = MetadataExtractor()
+        self.metadata_extractor = MetadataValidator()
         self.content_parser = MarkdownParser()
 
     def process_document(self, file_path: Path) -> ProcessedDocument:

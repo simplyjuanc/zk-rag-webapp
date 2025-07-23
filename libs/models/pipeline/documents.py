@@ -1,5 +1,3 @@
-"""Document and content models for the data pipeline."""
-
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel

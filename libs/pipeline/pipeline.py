@@ -129,14 +129,17 @@ class DataPipeline:
     
     async def _handle_file_processing(self, file_path: Path, event_type: FileEventType) -> PipelineResult:
         """Handle file processing (create/modify)."""
+        logger.info(f"Processing file: {file_path} ({event_type})")
         processed_document = self.processor.process_document(file_path)
         document_chunks = self.processor.extract_chunks(
             processed_document.processed_content,
             self.config.chunk_size,
             self.config.chunk_overlap
         )
+
         embedded_chunks = await self.document_embedder.embed_document_chunks(document_chunks)
-        
+
+        logger.info(f"Processed file successfully: {file_path} ({event_type})")
         result = PipelineResult.from_processing(
             document=processed_document,
             chunks=embedded_chunks,

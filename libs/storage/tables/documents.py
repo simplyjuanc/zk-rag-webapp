@@ -55,5 +55,4 @@ class DocumentChunk(Base):
     created_at: Mapped[str] = mapped_column(nullable=True)
     updated_at: Mapped[str] = mapped_column(nullable=True)
 
-    document = relationship("Document", backref="chunks")
-    
+    document = relationship("Document", back_populates="chunks")
