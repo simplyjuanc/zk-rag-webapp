@@ -54,11 +54,11 @@ async def store_pipeline_results_to_db(result: PipelineResult) -> None:
 
     except Exception as e:
         logger.error(f"Error storing pipeline results to database: {e}")
-        if "session" in locals():
+        if session is not None:
             session.rollback()
         raise
     finally:
-        if "session" in locals():
+        if session is not None:
             session.close()
 
 
