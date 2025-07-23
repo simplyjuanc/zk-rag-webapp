@@ -2,56 +2,52 @@
 
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from .metadata import DocumentMetadata, FileMetadata, FrontmatterMetadata
+from .metadata import DocumentMetadata, FrontmatterMetadata
+from libs.models.Document import DocumentDB, DocumentChunkDB
 
+# --- Content and Chunk Models ---
 
 class ProcessedContent(BaseModel):
-    """Processed markdown content."""
     raw_content: str
     processed_content: str
     content_hash: str
     processed_at: datetime
 
-
-class ChunkData(BaseModel):
-    """Data for a single content chunk."""
-    content: str
-    content_hash: str
-    chunk_index: int
-    start_line: int
-    end_line: int
-    word_count_estimate: int
-
-
-class ParsedContent(BaseModel):
-    """Parsed markdown content with metadata."""
-    metadata: FrontmatterMetadata
-    content: str
-
-
 class DocumentChunk(BaseModel):
-    """A chunk of document content."""
+    id: str
     content: str
     content_hash: str
     chunk_index: int
     start_line: int
     end_line: int
     word_count_estimate: int
-
 
 class EmbeddedChunk(DocumentChunk):
-    """A document chunk with its embedding."""
     embedding: List[float]
     embedding_model: str
     embedding_created_at: Optional[datetime] = None
 
+# --- Document Models ---
+
+
+class ChunkData(BaseModel):
+        content: str
+        content_hash: str
+        chunk_index: int
+        start_line: int
+        end_line: int
+        word_count_estimate: int
+
+
+class ParsedContent(BaseModel):
+    metadata: FrontmatterMetadata
+    content: str
 
 class ProcessedDocument(BaseModel):
-    """A fully processed document."""
     metadata: DocumentMetadata
     raw_content: str
     processed_content: str
     content_hash: str
-    processed_at: datetime 
+    processed_at: datetime

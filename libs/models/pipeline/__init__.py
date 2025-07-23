@@ -18,8 +18,8 @@ from .models import (
     FrontmatterMetadata,
     ProcessedContent,
     DocumentMetadata,
+    ParsedContent,
     ChunkData,
-    ParsedContent
 )
 
 __all__ = [
@@ -37,6 +37,6 @@ __all__ = [
     "FrontmatterMetadata",
     "ProcessedContent",
     "DocumentMetadata",
+    "ParsedContent",
     "ChunkData",
-    "ParsedContent"
 ] 

@@ -6,13 +6,13 @@ import tempfile
 import os
 from pathlib import Path
 
-from libs.models.pipeline import EmbeddedChunk, ChunkData
+from libs.models.pipeline import EmbeddedChunk, DocumentChunk
 from libs.models.pipeline.documents import ProcessedDocument
-from libs.pipeline.processor import DocumentProcessor
+from libs.pipeline.document_processor import DocumentProcessor
 from libs.pipeline.embedder import EmbeddingBatch, OllamaEmbedder, DocumentEmbedder, SimilarityCalculator
 
 
-async def test_processor() -> tuple[ProcessedDocument, list[ChunkData]]:
+async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
     """Test the document processor."""
     print("Testing DocumentProcessor...")
     test_content = """---
@@ -59,7 +59,7 @@ async def test_processor() -> tuple[ProcessedDocument, list[ChunkData]]:
         chunks = processor.extract_chunks(result.processed_content, chunk_size=100, overlap=20)
         print(f"  - Generated {len(chunks)} chunks")
         
-        return result, chunks
+        return result, [DocumentChunk.model_validate(chunk) for chunk in chunks]
         
     finally:
         os.unlink(temp_file)
@@ -122,6 +122,7 @@ async def test_pipeline_integration() -> bool:
         
         for i, chunk in enumerate(test_chunks):
             embedded_chunk = EmbeddedChunk(
+                id=chunk.id,
                 content=chunk.content,
                 content_hash=chunk.content_hash,
                 chunk_index=chunk.chunk_index,

@@ -89,7 +89,7 @@ class FileWatcher:
         logger.info("Stopped file watcher")
     
     def scan_existing_files(self, callback: Callable[[Path, FileEventType], None]) -> None:
-        """Scan for existing markdown files in the directory."""
+        """Scan for existing Markdown files in the directory."""
         logger.info(f"Scanning for existing markdown files in: {self.watch_directory}")
         
         md_files = self.watch_directory.rglob("*.md")

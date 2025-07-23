@@ -1,12 +1,10 @@
 """Document processing models for the data pipeline."""
 
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Awaitable, Callable, List, Optional
-from pydantic import BaseModel, Field
+from typing import Awaitable, Callable, List, Optional
+from pydantic import BaseModel
 
-from .metadata import FileMetadata, FrontmatterMetadata
-from .documents import ProcessedContent, ProcessedDocument, EmbeddedChunk
+from .documents import ProcessedDocument, EmbeddedChunk
 from .events import FileEventType
 
 

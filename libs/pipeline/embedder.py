@@ -117,6 +117,7 @@ class DocumentEmbedder:
         embedded_chunks = []
         for chunk, embedding in zip(chunks, analysed_batch.embeddings):
             embedded_chunk = EmbeddedChunk(
+                id=chunk.id,
                 content=chunk.content,
                 content_hash=chunk.content_hash,
                 chunk_index=chunk.chunk_index,

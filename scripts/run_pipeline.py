@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Example script to run the data pipeline."""
-
 import asyncio
 import logging
 import sys
-from datetime import datetime
 from pathlib import Path
 
 # Add the project root to the Python path
@@ -33,11 +30,12 @@ async def pipeline_callback(result: PipelineResult) -> None:
         document = result.document
         chunks = result.chunks
 
-        file_name = document.metadata.file_metadata.file_name if document.metadata.file_metadata.file_name else "unknown"
+        logger.info(f"Document: {document}")
+        logger.info(f"Chunks: {chunks}")
+        file_name = document.metadata.file_metadata.file_name if document.metadata.file_metadata else "unknown"
         num_chunks = len(chunks) if chunks is not None else 0
-
         logger.info(
-            f"Processed document{f': {file_name}' if file_name else ''} with {num_chunks} chunks"
+            f"Processed document: {file_name} with {num_chunks} chunks"
         )
 
 

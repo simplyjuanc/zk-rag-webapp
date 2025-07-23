@@ -9,8 +9,8 @@ from .documents import (
     EmbeddedChunk,
     ProcessedDocument,
     ProcessedContent,
+    ParsedContent,
     ChunkData,
-    ParsedContent
 )
 from .metadata import FileMetadata, FrontmatterMetadata, DocumentMetadata
 from .processor import PipelineResult, PipelineStatus, PipelineCallback
@@ -32,6 +32,6 @@ __all__ = [
     "FrontmatterMetadata",
     "DocumentMetadata",
     "ProcessedContent",
+    "ParsedContent",
     "ChunkData",
-    "ParsedContent"
 ] 
