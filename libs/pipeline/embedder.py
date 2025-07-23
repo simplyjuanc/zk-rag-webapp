@@ -12,7 +12,7 @@ from libs.models.pipeline import DocumentChunk, EmbeddedChunk
 logger = logging.getLogger(__name__)
 
 DEFAULT_EMBEDDING_SIZE = 1536
-BASE_EMBEDDING = [0.0]
+BASE_EMBEDDING = [0.0] * DEFAULT_EMBEDDING_SIZE
 
 
 class EmbeddingResult(BaseModel):
