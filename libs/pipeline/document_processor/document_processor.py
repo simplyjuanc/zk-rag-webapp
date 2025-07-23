@@ -70,7 +70,7 @@ class DocumentProcessor:
                 chunk_text = "\n".join(current_chunk)
                 chunks.append(
                     DocumentChunk(
-                        id="{0}_{1}-{2}".format(document_id, idx, current_length),
+                        id=uuid.uuid4().hex,
                         content=chunk_text,
                         content_hash=self.__calculate_content_hash(chunk_text),
                         chunk_index=len(chunks),
