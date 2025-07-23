@@ -6,8 +6,10 @@ import tempfile
 import os
 from pathlib import Path
 
+from libs.models import PipelineConfig, PipelineResult
 from libs.models.pipeline import EmbeddedChunk, DocumentChunk
 from libs.models.pipeline.documents import ProcessedDocument
+from libs.pipeline import DataPipeline
 from libs.pipeline.document_processor import DocumentProcessor
 from libs.pipeline.embedder import EmbeddingBatch, OllamaEmbedder, DocumentEmbedder, SimilarityCalculator
 
@@ -35,7 +37,7 @@ async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
         More content in section 2.
     """.strip()
     
-    # Create a temporary markdown file
+    # Create a temporary Markdown file
     with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
         f.write(test_content)
         temp_file = f.name
@@ -72,8 +74,7 @@ async def test_embedder() -> EmbeddingBatch | None:
     try:
         # Test connection to Ollama
         embedder = OllamaEmbedder()
-        document_embedder = DocumentEmbedder(embedder)
-        
+
         # Test single embedding
         test_text = "This is a test sentence for embedding."
         embedding = await embedder.embed_text(test_text)

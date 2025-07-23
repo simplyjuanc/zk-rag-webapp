@@ -19,7 +19,9 @@ from .models import (
     ProcessedContent,
     DocumentMetadata,
     ParsedContent,
-    ChunkData,
+    DocumentChunk,
+    EmbeddedChunk,
+    DocumentChunk,
 )
 
 __all__ = [
@@ -38,5 +40,5 @@ __all__ = [
     "ProcessedContent",
     "DocumentMetadata",
     "ParsedContent",
-    "ChunkData",
+    "DocumentChunk",
 ] 

@@ -130,30 +130,13 @@ class DataPipeline:
     async def _handle_file_processing(self, file_path: Path, event_type: FileEventType) -> PipelineResult:
         """Handle file processing (create/modify)."""
         processed_document = self.processor.process_document(file_path)
-        
-        chunk_data_list = self.processor.extract_chunks(
+        document_chunks = self.processor.extract_chunks(
             processed_document.processed_content,
             self.config.chunk_size,
             self.config.chunk_overlap
         )
-        
-        document_chunks = [
-            DocumentChunk(
-                id=str(uuid.uuid4()),
-                content=chunk.content,
-                content_hash=chunk.content_hash,
-                chunk_index=chunk.chunk_index,
-                start_line=chunk.start_line,
-                end_line=chunk.end_line,
-                word_count_estimate=chunk.word_count_estimate
-            )
-            for chunk in chunk_data_list
-        ]
-        
-        # Generate embeddings
         embedded_chunks = await self.document_embedder.embed_document_chunks(document_chunks)
         
-        # Create result using Pydantic model
         result = PipelineResult.from_processing(
             document=processed_document,
             chunks=embedded_chunks,

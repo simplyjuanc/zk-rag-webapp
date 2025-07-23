@@ -14,5 +14,5 @@ from libs.models.pipeline import (
     ParsedContent,
     DocumentMetadata,
     ProcessedDocument,
-    ChunkData,
+    DocumentChunk,
 )

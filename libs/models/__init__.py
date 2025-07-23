@@ -14,7 +14,7 @@ from .pipeline import (
     FrontmatterMetadata,
     ProcessedContent,
     DocumentMetadata,
-    ChunkData,
+    DocumentChunk,
     ParsedContent
 )
 
@@ -37,6 +37,6 @@ __all__ = [
     "FrontmatterMetadata",
     "ProcessedContent",
     "DocumentMetadata",
-    "ChunkData",
+    "DocumentChunk",
     "ParsedContent"
 ]

@@ -30,13 +30,9 @@ async def pipeline_callback(result: PipelineResult) -> None:
         document = result.document
         chunks = result.chunks
 
-        logger.info(f"Document: {document}")
-        logger.info(f"Chunks: {chunks}")
         file_name = document.metadata.file_metadata.file_name if document.metadata.file_metadata else "unknown"
         num_chunks = len(chunks) if chunks is not None else 0
-        logger.info(
-            f"Processed document: {file_name} with {num_chunks} chunks"
-        )
+        logger.info(f"Document: {file_name}.{document.metadata.file_metadata.file_extension} was processed ({num_chunks} chunks)")
 
 
 async def main() -> None:
