@@ -3,13 +3,14 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from .metadata import DocumentMetadata, FrontmatterMetadata
-from libs.models.Document import DocumentDB, DocumentChunkDB
+
 
 class ProcessedContent(BaseModel):
     raw_content: str
     processed_content: str
     content_hash: str
     processed_at: datetime
+
 
 class DocumentChunk(BaseModel):
     id: str
@@ -20,18 +21,17 @@ class DocumentChunk(BaseModel):
     end_line: int
     word_count_estimate: int
 
+
 class EmbeddedChunk(DocumentChunk):
     embedding: List[float]
     embedding_model: str
     embedding_created_at: Optional[datetime] = None
 
 
-
-# --- Metadata Models ---
-
 class ParsedContent(BaseModel):
     metadata: FrontmatterMetadata
     content: str
+
 
 class ProcessedDocument(BaseModel):
     metadata: DocumentMetadata

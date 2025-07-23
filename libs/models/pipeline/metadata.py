@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 class FileMetadata(BaseModel):
     """File system metadata."""
+
     file_path: str
     file_name: str
     file_extension: str
@@ -17,6 +18,7 @@ class FileMetadata(BaseModel):
 
 class FrontmatterMetadata(BaseModel):
     """Metadata extracted from frontmatter."""
+
     created_on: Optional[str] = Field(default=None)
     last_updated: Optional[str] = Field(default=None)
     author: Optional[List[str]] = Field(default=None)
@@ -25,11 +27,11 @@ class FrontmatterMetadata(BaseModel):
     source: Optional[str] = Field(default=None)
     title: Optional[str] = Field(default=None)
     tags: Optional[List[str]] = Field(default=None)
-    description: Optional[str] = Field(default=None) 
+    description: Optional[str] = Field(default=None)
 
 
 class DocumentMetadata(BaseModel):
     """Metadata for a document."""
+
     file_metadata: Optional[FileMetadata] = Field(default=None)
     frontmatter_metadata: Optional[FrontmatterMetadata] = Field(default=None)
-

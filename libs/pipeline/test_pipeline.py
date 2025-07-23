@@ -11,7 +11,12 @@ from libs.models.pipeline import EmbeddedChunk, DocumentChunk
 from libs.models.pipeline.documents import ProcessedDocument
 from libs.pipeline import DataPipeline
 from libs.pipeline.document_processor import DocumentProcessor
-from libs.pipeline.embedder import EmbeddingBatch, OllamaEmbedder, DocumentEmbedder, SimilarityCalculator
+from libs.pipeline.embedder import (
+    EmbeddingBatch,
+    OllamaEmbedder,
+    DocumentEmbedder,
+    SimilarityCalculator,
+)
 
 
 async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
@@ -36,33 +41,44 @@ async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
 
         More content in section 2.
     """.strip()
-    
+
     # Create a temporary Markdown file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
         f.write(test_content)
         temp_file = f.name
-    
+
     try:
         processor = DocumentProcessor()
         result = processor.process_document(Path(temp_file))
-        
-        if not result.metadata.file_metadata or not result.metadata.frontmatter_metadata:
+
+        if (
+            not result.metadata.file_metadata
+            or not result.metadata.frontmatter_metadata
+        ):
             raise ValueError("Processed document has no metadata")
-        
+
         print(f"✓ Processed document: {result.metadata.file_metadata.file_name}")
         print(f"  - Content hash: {result.content_hash[:16]}...")
-        print(f"  - Author: {result.metadata.frontmatter_metadata.author if result.metadata.frontmatter_metadata.author else 'N/A'}")
-        print(f"  - Category: {result.metadata.frontmatter_metadata.category if result.metadata.frontmatter_metadata.category else 'N/A'}")
-        print(f"  - Created: {result.metadata.frontmatter_metadata.created_on if result.metadata.frontmatter_metadata.created_on else 'N/A'}")
-        
+        print(
+            f"  - Author: {result.metadata.frontmatter_metadata.author if result.metadata.frontmatter_metadata.author else 'N/A'}"
+        )
+        print(
+            f"  - Category: {result.metadata.frontmatter_metadata.category if result.metadata.frontmatter_metadata.category else 'N/A'}"
+        )
+        print(
+            f"  - Created: {result.metadata.frontmatter_metadata.created_on if result.metadata.frontmatter_metadata.created_on else 'N/A'}"
+        )
+
         if not result.processed_content:
             raise ValueError("Processed document has no content")
 
-        chunks = processor.extract_chunks(result.processed_content, chunk_size=100, overlap=20)
+        chunks = processor.extract_chunks(
+            result.processed_content, chunk_size=100, overlap=20
+        )
         print(f"  - Generated {len(chunks)} chunks")
-        
+
         return result, [DocumentChunk.model_validate(chunk) for chunk in chunks]
-        
+
     finally:
         os.unlink(temp_file)
 
@@ -70,7 +86,7 @@ async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
 async def test_embedder() -> EmbeddingBatch | None:
     """Test the document embedder."""
     print("\nTesting DocumentEmbedder...")
-    
+
     try:
         # Test connection to Ollama
         embedder = OllamaEmbedder()
@@ -78,29 +94,31 @@ async def test_embedder() -> EmbeddingBatch | None:
         # Test single embedding
         test_text = "This is a test sentence for embedding."
         embedding = await embedder.embed_text(test_text)
-        
+
         print(f"✓ Generated embedding of length: {len(embedding.embedding)}")
         print(f"  - First few values: {embedding.embedding[:5]}")
-        
+
         # Test batch embedding
         test_texts = [
             "First test sentence.",
             "Second test sentence.",
-            "Third test sentence."
+            "Third test sentence.",
         ]
-        
+
         batch_embedding_result = await embedder.embed_batch(test_texts)
         embeddings = batch_embedding_result.embeddings
         print(f"✓ Generated {len(embeddings)} batch embeddings")
-        
+
         similarity_calculator = SimilarityCalculator()
-        
-        similarity = await similarity_calculator.calculate_similarity(embeddings[0], embeddings[1])
+
+        similarity = await similarity_calculator.calculate_similarity(
+            embeddings[0], embeddings[1]
+        )
         print(f"✓ Calculated similarity: {similarity:.4f}")
-        
+
         await embedder.close()
         return batch_embedding_result
-        
+
     except Exception as e:
         print(f"✗ Embedder test failed: {e}")
         print("  Make sure Ollama is running with the nomic-embed-text model")
@@ -110,17 +128,17 @@ async def test_embedder() -> EmbeddingBatch | None:
 async def test_pipeline_integration() -> bool:
     """Test basic pipeline integration."""
     print("\nTesting Pipeline Integration...")
-    
+
     document, chunks = await test_processor()
     embeddings = await test_embedder()
-    
+
     if embeddings and chunks:
         print("✓ Pipeline components work together")
-        
+
         # Simulate embedding chunks
         test_chunks = chunks[:2]  # Use first 2 chunks
         embedded_chunks = []
-        
+
         for i, chunk in enumerate(test_chunks):
             embedded_chunk = EmbeddedChunk(
                 id=chunk.id,
@@ -130,14 +148,16 @@ async def test_pipeline_integration() -> bool:
                 start_line=chunk.start_line,
                 end_line=chunk.end_line,
                 word_count_estimate=chunk.word_count_estimate,
-                embedding=embeddings.embeddings[i % len(embeddings.embeddings)].embedding,
-                embedding_model='nomic-embed-text',
+                embedding=embeddings.embeddings[
+                    i % len(embeddings.embeddings)
+                ].embedding,
+                embedding_model="nomic-embed-text",
                 embedding_created_at=embeddings.batch_created_at,
-                )
+            )
             embedded_chunks.append(embedded_chunk)
-        
+
         print(f"✓ Successfully embedded {len(embedded_chunks)} chunks")
-        
+
         return True
     else:
         print("✗ Pipeline integration test failed")
@@ -148,9 +168,9 @@ async def main() -> None:
     """Run all tests."""
     print("Running Data Pipeline Tests")
     print("=" * 40)
-    
+
     success = await test_pipeline_integration()
-    
+
     print("\n" + "=" * 40)
     if success:
         print("✓ All tests passed!")
@@ -162,4 +182,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

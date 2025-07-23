@@ -15,12 +15,12 @@ from .pipeline import (
     ProcessedContent,
     DocumentMetadata,
     DocumentChunk,
-    ParsedContent
+    ParsedContent,
 )
 
 __all__ = [
     "BaseUser",
-    "UserCreateRequest", 
+    "UserCreateRequest",
     "User",
     "Token",
     "JwtPayload",
@@ -38,5 +38,5 @@ __all__ = [
     "ProcessedContent",
     "DocumentMetadata",
     "DocumentChunk",
-    "ParsedContent"
+    "ParsedContent",
 ]

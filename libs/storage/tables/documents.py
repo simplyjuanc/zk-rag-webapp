@@ -30,15 +30,19 @@ class Document(Base):
     content_created_at: Mapped[str] = mapped_column(nullable=True)
     content_modified_at: Mapped[str] = mapped_column(nullable=True)
     processed_at: Mapped[str] = mapped_column(nullable=True)
-    
-    chunks = relationship('DocumentChunk', back_populates='document')
+
+    chunks = relationship("DocumentChunk", back_populates="document")
 
 
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
 
-    id: Mapped[str] = mapped_column(primary_key=True, index=True, default=lambda: uuid.uuid4().hex)
-    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(
+        primary_key=True, index=True, default=lambda: uuid.uuid4().hex
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.id"), nullable=False, index=True
+    )
     content: Mapped[str] = mapped_column(nullable=False)
     content_hash: Mapped[str] = mapped_column(nullable=False)
     chunk_index: Mapped[int] = mapped_column(nullable=False)
@@ -49,7 +53,9 @@ class DocumentChunk(Base):
     token_count: Mapped[int] = mapped_column(nullable=True)
     estimated_tokens: Mapped[int] = mapped_column(nullable=True)
     embedding: Mapped[str] = mapped_column(nullable=True)  # Store as JSON/text for now
-    embedding_model: Mapped[str] = mapped_column(nullable=True, default="text-embedding-ada-002")
+    embedding_model: Mapped[str] = mapped_column(
+        nullable=True, default="text-embedding-ada-002"
+    )
     embedding_created_at: Mapped[str] = mapped_column(nullable=True)
     semantic_similarity: Mapped[float] = mapped_column(nullable=True)
     created_at: Mapped[str] = mapped_column(nullable=True)

@@ -28,7 +28,7 @@ __all__ = [
     "PipelineConfig",
     "FileEvent",
     "FileEventType",
-    "DocumentMetadata", 
+    "DocumentMetadata",
     "DocumentChunk",
     "EmbeddedChunk",
     "ProcessedDocument",
@@ -41,4 +41,4 @@ __all__ = [
     "DocumentMetadata",
     "ParsedContent",
     "DocumentChunk",
-] 
+]

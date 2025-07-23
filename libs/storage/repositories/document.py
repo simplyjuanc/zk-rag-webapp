@@ -12,7 +12,7 @@ class DocumentRepository:
 
     def create_document(self, document: DocumentDB) -> DocumentDB:
         # Exclude chunks field when creating SQLAlchemy model since it's a relationship
-        doc_data = document.model_dump(exclude_unset=True, exclude={'chunks'})
+        doc_data = document.model_dump(exclude_unset=True, exclude={"chunks"})
         doc = Document(**doc_data)
         self.session.add(doc)
         self.session.commit()
@@ -31,12 +31,20 @@ class DocumentRepository:
         return DocumentChunkDB.model_validate(chunk.__dict__)
 
     def get_chunks_by_document_id(self, doc_id: str) -> List[DocumentChunkDB]:
-        chunks = self.session.query(DocumentChunk).filter(DocumentChunk.document_id == doc_id).all()
+        chunks = (
+            self.session.query(DocumentChunk)
+            .filter(DocumentChunk.document_id == doc_id)
+            .all()
+        )
         return [DocumentChunkDB.model_validate(chunk.__dict__) for chunk in chunks]
 
 
-def get_document_repository(session: Session = Depends(get_db_session)) -> DocumentRepository:
+def get_document_repository(
+    session: Session = Depends(get_db_session),
+) -> DocumentRepository:
     return DocumentRepository(session)
 
 
-document_repo_injection = Annotated[DocumentRepository, Depends(get_document_repository)]
+document_repo_injection = Annotated[
+    DocumentRepository, Depends(get_document_repository)
+]

@@ -1,6 +1,6 @@
-
 from pydantic import BaseModel
 from typing import List, Optional
+
 
 class DocumentChunkDB(BaseModel):
     id: str
@@ -20,6 +20,7 @@ class DocumentChunkDB(BaseModel):
     semantic_similarity: Optional[float] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
+
 
 class DocumentDB(BaseModel):
     id: str
@@ -41,4 +42,4 @@ class DocumentDB(BaseModel):
     content_created_at: Optional[str] = None
     content_modified_at: Optional[str] = None
     processed_at: Optional[str] = None
-    chunks: Optional[List[DocumentChunkDB]] = None 
+    chunks: Optional[List[DocumentChunkDB]] = None

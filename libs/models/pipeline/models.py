@@ -34,4 +34,4 @@ __all__ = [
     "ProcessedContent",
     "ParsedContent",
     "DocumentChunk",
-] 
+]

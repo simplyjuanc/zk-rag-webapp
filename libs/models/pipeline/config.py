@@ -7,5 +7,5 @@ class PipelineConfig(BaseModel):
     embedding_model: str = "nomic-embed-text"
     chunk_size: int = Field(default=1000, ge=100, le=10000)
     chunk_overlap: int = Field(default=200, ge=0, le=2000)
-    
+
     model_config = ConfigDict(frozen=True)

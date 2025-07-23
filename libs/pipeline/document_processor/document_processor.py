@@ -15,7 +15,7 @@ OVERLAP_ESTIMATED_LINE_LENGTH = 50
 
 class DocumentProcessor:
     """Processes Markdown documents and extracts all relevant information."""
-    
+
     def __init__(self) -> None:
         self.metadata_extractor = MetadataValidator()
         self.content_parser = MarkdownParser()
@@ -23,31 +23,35 @@ class DocumentProcessor:
     def process_document(self, file_path: Path) -> ProcessedDocument:
         """Process a Markdown document and extract all relevant information."""
         try:
-            content = file_path.read_text(encoding='utf-8')
+            content = file_path.read_text(encoding="utf-8")
             file_metadata = self.metadata_extractor.extract_file_metadata(file_path)
-            parsed_content = self.content_parser.parse_content(content, self.metadata_extractor)
-            
+            parsed_content = self.content_parser.parse_content(
+                content, self.metadata_extractor
+            )
+
             result = ProcessedDocument(
-              metadata=DocumentMetadata(
-                file_metadata=file_metadata,
-                frontmatter_metadata=parsed_content.metadata
-              ),
-              raw_content=content,
-              processed_content=parsed_content.content,
-              content_hash=self.__calculate_content_hash(parsed_content.content),
-              processed_at=datetime.now(timezone.utc)
-           )
-            
+                metadata=DocumentMetadata(
+                    file_metadata=file_metadata,
+                    frontmatter_metadata=parsed_content.metadata,
+                ),
+                raw_content=content,
+                processed_content=parsed_content.content,
+                content_hash=self.__calculate_content_hash(parsed_content.content),
+                processed_at=datetime.now(timezone.utc),
+            )
+
             logger.info(f"Processed document: {file_path.name}")
             return result
-            
+
         except Exception as e:
             logger.error(f"Error processing document {file_path}: {e}")
             raise
 
-    def extract_chunks(self, content: str, chunk_size: int = 1000, overlap: int = 200) -> List[DocumentChunk]:
+    def extract_chunks(
+        self, content: str, chunk_size: int = 1000, overlap: int = 200
+    ) -> List[DocumentChunk]:
         chunks: List[DocumentChunk] = []
-        lines = content.split('\n')
+        lines = content.split("\n")
         current_chunk: List[str] = []
         current_length = 0
         chunk_start_line = 0
@@ -63,21 +67,28 @@ class DocumentProcessor:
                 current_length += line_length
             else:
                 # Else finalise the current chunk and start a new one
-                chunk_text = '\n'.join(current_chunk)
-                chunks.append(DocumentChunk(
-                    id='{0}_{1}-{2}'.format(document_id, idx, current_length),
-                    content=chunk_text,
-                    content_hash=self.__calculate_content_hash(chunk_text),
-                    chunk_index=len(chunks),
-                    start_line=chunk_start_line,
-                    end_line=idx - 1,
-                    word_count_estimate=len(chunk_text.split()),
-                ))
+                chunk_text = "\n".join(current_chunk)
+                chunks.append(
+                    DocumentChunk(
+                        id="{0}_{1}-{2}".format(document_id, idx, current_length),
+                        content=chunk_text,
+                        content_hash=self.__calculate_content_hash(chunk_text),
+                        chunk_index=len(chunks),
+                        start_line=chunk_start_line,
+                        end_line=idx - 1,
+                        word_count_estimate=len(chunk_text.split()),
+                    )
+                )
 
                 # Start new chunk with overlap
                 if overlap > 0:
                     # Calculate how many lines to overlap (roughly overlap/50 characters per line)
-                    overlap_lines_count = max(1, min(len(current_chunk), overlap // OVERLAP_ESTIMATED_LINE_LENGTH))
+                    overlap_lines_count = max(
+                        1,
+                        min(
+                            len(current_chunk), overlap // OVERLAP_ESTIMATED_LINE_LENGTH
+                        ),
+                    )
                     overlap_lines = current_chunk[-overlap_lines_count:]
                     current_chunk = overlap_lines + [line]
                     current_length = sum(len(l) + 1 for l in current_chunk)
@@ -89,18 +100,20 @@ class DocumentProcessor:
 
         # Add final chunk if there's remaining content
         if current_chunk:
-            chunk_text = '\n'.join(current_chunk)
-            chunks.append(DocumentChunk(
-                id=document_id + str(len(lines)),
-                content=chunk_text,
-                content_hash=self.__calculate_content_hash(chunk_text),
-                chunk_index=len(chunks),
-                start_line=chunk_start_line,
-                end_line=len(lines) - 1,
-                word_count_estimate=len(chunk_text.split()),
-            ))
+            chunk_text = "\n".join(current_chunk)
+            chunks.append(
+                DocumentChunk(
+                    id=document_id + str(len(lines)),
+                    content=chunk_text,
+                    content_hash=self.__calculate_content_hash(chunk_text),
+                    chunk_index=len(chunks),
+                    start_line=chunk_start_line,
+                    end_line=len(lines) - 1,
+                    word_count_estimate=len(chunk_text.split()),
+                )
+            )
 
         return chunks
 
     def __calculate_content_hash(self, content: str) -> str:
-        return hashlib.sha256(content.encode('utf-8')).hexdigest()
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()

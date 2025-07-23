@@ -1,29 +1,32 @@
 import re
 import logging
 import frontmatter  # type: ignore
-from libs.models.pipeline import ParsedContent 
+from libs.models.pipeline import ParsedContent
 from .metadata_extractor import MetadataValidator
 
 logger = logging.getLogger(__name__)
 
+
 class MarkdownParser:
     """Parses and cleans markdown content."""
-    
+
     @staticmethod
-    def parse_content(content: str, metadata_validator: MetadataValidator) -> ParsedContent:
+    def parse_content(
+        content: str, metadata_validator: MetadataValidator
+    ) -> ParsedContent:
         """Parse markdown content and extract frontmatter and content."""
         try:
             post = frontmatter.loads(content)
             metadata = dict(post.metadata) if post.metadata else {}
             clean_content = post.content
-            
+
         except Exception as e:
             logger.warning(f"Could not parse frontmatter: {e}")
             metadata = {}
             clean_content = content
-        
+
         processed_content = MarkdownParser.clean_content(clean_content)
-        
+
         return ParsedContent(
             metadata=metadata_validator.validate_metadata(metadata, processed_content),
             content=processed_content,
@@ -32,12 +35,12 @@ class MarkdownParser:
     @staticmethod
     def clean_content(content: str) -> str:
         # Remove excessive whitespace
-        content = re.sub(r'\n\s*\n\s*\n', '\n\n', content)
+        content = re.sub(r"\n\s*\n\s*\n", "\n\n", content)
 
         # Remove HTML comments
-        content = re.sub(r'<!--.*?-->', '', content, flags=re.DOTALL)
+        content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
 
         # Normalize line endings
-        content = content.replace('\r\n', '\n').replace('\r', '\n')
+        content = content.replace("\r\n", "\n").replace("\r", "\n")
 
         return content.strip()
