@@ -37,7 +37,7 @@ class DataPipeline:
     ):
         self.config = config
 
-        self.file_watcher:SourceWatcher = FileWatcher(self.config.watch_directory)
+        self.file_watcher: SourceWatcher = FileWatcher(self.config.watch_directory)
         self.processor = DocumentProcessor()
 
         self.ollama_embedder = OllamaEmbedder(

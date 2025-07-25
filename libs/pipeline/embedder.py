@@ -56,7 +56,7 @@ class OllamaEmbedder:
             except Exception as conv_e:
                 logger.error(f"Failed to convert embedding values to float: {conv_e}")
                 raise ValueError("Embedding contains non-numeric values") from conv_e
-            
+
             logger.debug(f"Generated embedding of length {len(embedding)}")
             return EmbeddingResult(
                 embedding=embedding_floats,
@@ -142,7 +142,6 @@ class DocumentEmbedder:
 
 
 class SimilarityCalculator:
-
     async def calculate_similarity(
         self, embedding1: EmbeddingResult, embedding2: EmbeddingResult
     ) -> float:

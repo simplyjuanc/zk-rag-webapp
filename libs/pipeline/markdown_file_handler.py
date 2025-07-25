@@ -41,7 +41,3 @@ class MarkdownFileHandler(FileSystemEventHandler):
             self.callback(path, event_type.value)
         except Exception as e:
             logger.error(f"Error processing file {file_path}: {e}")
-
-
-
-

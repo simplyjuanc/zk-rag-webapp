@@ -64,7 +64,7 @@ async def store_pipeline_results_to_db(result: PipelineResult) -> None:
 
 async def main() -> None:
     watch_directory = "assets"
-    ollama_url = "http://localhost:11434"
+    ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
     embedding_model = "nomic-embed-text"
 
     # Create pipeline configuration
