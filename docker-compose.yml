@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: server
+    container_name: app
     command: uvicorn apps.backend.app:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - .:/app

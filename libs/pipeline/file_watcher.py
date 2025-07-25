@@ -1,5 +1,4 @@
-"""File watcher for monitoring markdown files in a directory."""
-
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Set
 from watchdog.observers import Observer
@@ -19,25 +18,25 @@ class MarkdownFileHandler(FileSystemEventHandler):
         self.processed_files: Set[str] = set()
 
     def on_created(self, event: FileSystemEvent) -> None:
-        if not event.is_directory and self._is_markdown_file(event.src_path):
+        if not event.is_directory and self.__is_markdown_file(event.src_path):
             logger.info(f"New markdown file detected: {event.src_path}")
-            self._process_file(event.src_path, FileEventType.CREATED)
+            self.__process_file(event.src_path, FileEventType.CREATED)
 
     def on_modified(self, event: FileSystemEvent) -> None:
-        if not event.is_directory and self._is_markdown_file(event.src_path):
+        if not event.is_directory and self.__is_markdown_file(event.src_path):
             logger.info(f"Markdown file modified: {event.src_path}")
-            self._process_file(event.src_path, FileEventType.MODIFIED)
+            self.__process_file(event.src_path, FileEventType.MODIFIED)
 
     def on_deleted(self, event: FileSystemEvent) -> None:
-        if not event.is_directory and self._is_markdown_file(event.src_path):
+        if not event.is_directory and self.__is_markdown_file(event.src_path):
             logger.info(f"Markdown file deleted: {event.src_path}")
-            self._process_file(event.src_path, FileEventType.DELETED)
+            self.__process_file(event.src_path, FileEventType.DELETED)
 
-    def _is_markdown_file(self, file_path: str) -> bool:
+    def __is_markdown_file(self, file_path: str) -> bool:
         """Check if the file is a markdown file."""
         return file_path.lower().endswith((".md", ".markdown"))
 
-    def _process_file(self, file_path: str, event_type: FileEventType) -> None:
+    def __process_file(self, file_path: str, event_type: FileEventType) -> None:
         """Process the file change event."""
         try:
             path = Path(file_path)

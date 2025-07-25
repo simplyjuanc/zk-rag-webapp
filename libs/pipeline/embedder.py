@@ -1,5 +1,3 @@
-"""Document embedder using Ollama for local embedding generation."""
-
 import logging
 from typing import List
 from datetime import datetime, timezone
@@ -31,8 +29,6 @@ class EmbeddingBatch(BaseModel):
 
 
 class OllamaEmbedder:
-    """Embedder using Ollama's local embedding models."""
-
     def __init__(
         self, base_url: str = "http://localhost:11434", model: str = "nomic-embed-text"
     ):
@@ -41,7 +37,6 @@ class OllamaEmbedder:
         self.client = httpx.AsyncClient(timeout=30.0)
 
     async def embed_text(self, text: str) -> EmbeddingResult:
-        """Generate embedding for a single text."""
         try:
             response = await self.client.post(
                 f"{self.base_url}/api/embeddings",
@@ -54,8 +49,6 @@ class OllamaEmbedder:
 
             if not embedding:
                 raise ValueError("No embedding returned from Ollama")
-            logger.debug(f"Generated embedding of length {len(embedding)}")
-            # Ensure the embedding is a list of floats
             if not isinstance(embedding, list):
                 raise ValueError("Embedding returned is not a list")
             try:
@@ -63,6 +56,8 @@ class OllamaEmbedder:
             except Exception as conv_e:
                 logger.error(f"Failed to convert embedding values to float: {conv_e}")
                 raise ValueError("Embedding contains non-numeric values") from conv_e
+            
+            logger.debug(f"Generated embedding of length {len(embedding)}")
             return EmbeddingResult(
                 embedding=embedding_floats,
                 embedding_model=self.model,
@@ -73,7 +68,6 @@ class OllamaEmbedder:
             raise
 
     async def embed_batch(self, texts: List[str]) -> EmbeddingBatch:
-        """Generate embeddings for multiple texts."""
         embeddings: List[EmbeddingResult] = []
         batch_created_at = datetime.now(timezone.utc)
 
@@ -148,7 +142,6 @@ class DocumentEmbedder:
 
 
 class SimilarityCalculator:
-    """Handles similarity calculations between embeddings."""
 
     async def calculate_similarity(
         self, embedding1: EmbeddingResult, embedding2: EmbeddingResult
