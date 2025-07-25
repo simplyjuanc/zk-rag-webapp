@@ -13,9 +13,10 @@ from libs.models.pipeline import (
     PipelineStatus,
     PipelineCallback,
 )
+from .watchers.file_watcher import FileWatcher
 from libs.pipeline.document_processor import DocumentProcessor
 
-from .file_watcher import FileWatcher, SourceWatcher
+from .watchers.source_watcher import SourceWatcher
 from .embedder import OllamaEmbedder, DocumentEmbedder, SimilarityCalculator
 
 # --- DB Storage Callback for Pipeline ---
