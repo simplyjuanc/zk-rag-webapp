@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, tzinfo
 from typing import Dict, Any
 from fastapi import APIRouter
 from config import settings
@@ -13,7 +13,7 @@ async def health_check() -> Dict[str, Any]:
     """
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now().isoformat(),
         "service": "Personal Knowledge AI Backend",
         "version": "0.1.0",
     }

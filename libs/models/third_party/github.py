@@ -1,6 +1,7 @@
-from typing import List, Optional, Any, Dict
+from typing import List, Optional
 from enum import Enum
 from pydantic import BaseModel, AnyHttpUrl, Field
+from datetime import datetime
 
 # Taken from required models from: https://docs.github.com/en/webhooks/webhook-events-and-payloads#push
 # There are more fields available in the Github payload
@@ -14,7 +15,6 @@ class User(BaseModel):
     html_url: Optional[AnyHttpUrl]
     type: Optional[str]
     site_admin: Optional[bool]
-    # name and email are not always present in sender, so remove them from here
 
 
 class Repository(BaseModel):
@@ -33,7 +33,6 @@ class Repository(BaseModel):
 class CommitAuthor(BaseModel):
     name: Optional[str]
     email: Optional[str]
-    # Remove username, as it's not present in pusher
 
     class Config:
         extra = "allow"
@@ -44,7 +43,7 @@ class Commit(BaseModel):
     tree_id: Optional[str]
     distinct: Optional[bool]
     message: Optional[str]
-    timestamp: Optional[str]
+    timestamp: Optional[datetime]
     url: Optional[AnyHttpUrl]
     author: Optional[CommitAuthor]
     committer: Optional[CommitAuthor]
@@ -77,13 +76,13 @@ class GithubEventTypes(str, Enum):
     PULL_REQUEST = "pull_request"
     OTHER = "other"
 
+    # If the value is not one of the defined enum values, return OTHER
     @classmethod
     def _missing_(cls, value: object) -> "GithubEventTypes":
-        # If the value is not one of the defined enum values, return OTHER
         return cls.OTHER
 
 
-class GitHubWebhookHeaders(BaseModel):
+class GithubWebhookHeaders(BaseModel):
     x_github_hook_id: str = Field(alias="x-github-hook-id")
     x_github_event: GithubEventTypes = Field(alias="x-github-event")
     x_github_delivery: str = Field(alias="x-github-delivery")
