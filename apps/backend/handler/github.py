@@ -37,7 +37,7 @@ class GithubHandler:
                 status_code=HTTPStatus.BAD_REQUEST, detail="Invalid webhook headers"
             )
         payload = await request.body()
-        self.__verify_github_signature(
+        self._verify_github_signature(
             payload, settings.zk_repo_secret, webhook_headers.x_hub_signature_256
         )
 
@@ -53,10 +53,10 @@ class GithubHandler:
                 detail="Unsupported GitHub event type",
             )
         push_event = PushEvent.model_validate_json(payload)
-        await self.__handle_github_push_event(push_event)
+        await self._handle_github_push_event(push_event)
         return JSONResponse(content={"message": "Push event processed successfully."})
 
-    def __verify_github_signature(
+    def _verify_github_signature(
         self, payload_body: bytes, secret_token: str, signature: str | None
     ) -> None:
         """Verify that the payload was sent from GitHub by validating SHA256.
@@ -85,7 +85,7 @@ class GithubHandler:
                 detail="Github request signatures didn't match!",
             )
 
-    async def __handle_github_push_event(self, event: PushEvent) -> None:
+    async def _handle_github_push_event(self, event: PushEvent) -> None:
         commits = event.commits
         all_modified: List[str] = []
         all_removed: List[str] = []

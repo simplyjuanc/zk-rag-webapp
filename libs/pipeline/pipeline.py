@@ -13,8 +13,8 @@ from libs.models.pipeline import (
     PipelineStatus,
     PipelineCallback,
 )
+from libs.utils.document_processor.document_processor import DocumentProcessor
 from .watchers.file_watcher import FileWatcher
-from libs.pipeline.document_processor import DocumentProcessor
 
 from .watchers.source_watcher import SourceWatcher
 from .embedder import EmbeddingService, DocumentEmbedder, SimilarityCalculator

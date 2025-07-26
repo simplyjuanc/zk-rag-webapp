@@ -6,17 +6,14 @@ import tempfile
 import os
 from pathlib import Path
 
-from libs.models import PipelineConfig, PipelineResult
 from libs.models.pipeline import EmbeddedChunk, DocumentChunk
 from libs.models.pipeline.documents import ProcessedDocument
-from libs.pipeline import DataPipeline
-from libs.pipeline.document_processor import DocumentProcessor
 from libs.pipeline.embedder import (
     EmbeddingBatch,
     EmbeddingService,
-    DocumentEmbedder,
     SimilarityCalculator,
 )
+from libs.utils.document_processor.document_processor import DocumentProcessor
 
 
 async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:

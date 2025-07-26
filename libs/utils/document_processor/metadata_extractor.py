@@ -3,8 +3,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 
-from pydantic_core import ValidationError
-
 from libs.models.pipeline import FileMetadata, FrontmatterMetadata
 
 LIST_KEYS = {"author", "category", "type", "tags"}

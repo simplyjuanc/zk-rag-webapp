@@ -50,6 +50,6 @@ class Container(containers.DeclarativeContainer):
 
 
 container = Container()
-# dependency-injector library does not 
+# dependency-injector library does not
 # recognise pydantic settings from the constructor
 container.config.from_dict(settings.model_dump())
