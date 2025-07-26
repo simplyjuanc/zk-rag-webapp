@@ -49,16 +49,20 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_started
+      ollama-init:
+        condition: service_completed_successfully
     env_file:
       - .env
+    restart: unless-stopped
 
   pipeline:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: pipeline
-    command: python libs/pipeline/main.py
+    command: python scripts/init_pipeline.py
     volumes:
       - .:/app
       - ./assets:/app/assets
@@ -71,6 +75,7 @@ services:
       - .env
     environment:
       - OLLAMA_URL=http://ollama:11434
+      - PYTHONPATH=/app
     restart: unless-stopped
 
 volumes:

@@ -13,7 +13,7 @@ from libs.pipeline import DataPipeline
 from libs.pipeline.document_processor import DocumentProcessor
 from libs.pipeline.embedder import (
     EmbeddingBatch,
-    OllamaEmbedder,
+    EmbeddingService,
     DocumentEmbedder,
     SimilarityCalculator,
 )
@@ -89,7 +89,7 @@ async def test_embedder() -> EmbeddingBatch | None:
 
     try:
         # Test connection to Ollama
-        embedder = OllamaEmbedder()
+        embedder = EmbeddingService()
 
         # Test single embedding
         test_text = "This is a test sentence for embedding."

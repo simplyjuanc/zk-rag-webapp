@@ -1,10 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import logging
-from fastapi import Request
-
 from starlette.responses import JSONResponse
-
-from apps.backend.handler.github import github_handler_injection
+from dependency_injector.wiring import inject, Provide
+from apps.backend.handler.github import GithubHandler
+from libs.di.container import Container
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +15,7 @@ WebhooksRouter = APIRouter(
 
 @WebhooksRouter.post("/github")
 async def handle_github_webhook(
-    request: Request, handler: github_handler_injection
+    request: Request,
 ) -> JSONResponse:
+    handler: GithubHandler = Container.github_handler()
     return await handler.handle_event(request)

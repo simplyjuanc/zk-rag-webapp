@@ -25,7 +25,7 @@ class EmbeddingBatch(BaseModel):
     batch_created_at: datetime
 
 
-class OllamaEmbedder:
+class EmbeddingService:
     def __init__(
         self,
         base_url: str = os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
@@ -100,7 +100,7 @@ class OllamaEmbedder:
 class DocumentEmbedder:
     """Handles embedding generation for documents and chunks."""
 
-    def __init__(self, embedder: OllamaEmbedder):
+    def __init__(self, embedder: EmbeddingService):
         self.embedder = embedder
 
     async def embed_document_chunks(

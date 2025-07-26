@@ -1,32 +1,25 @@
-# Multi-stage build for optimization
-FROM python:alpine@sha256:37b14db89f587f9eaa890e4a442a3fe55db452b69cca1403cc730bd0fbdc8aaf AS builder
+FROM python:3.11-slim AS builder
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
   gcc \
-  musl-dev \
-  libffi-dev \
-  openssl-dev \
-  postgresql-dev \
-  python3-dev \
-  curl \
-  # Required for building numpy/scipy
   g++ \
   make \
-  gfortran \
-  openblas-dev
+  libpq-dev \
+  libffi-dev \
+  curl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy uv files for dependency resolution
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-FROM python:alpine@sha256:37b14db89f587f9eaa890e4a442a3fe55db452b69cca1403cc730bd0fbdc8aaf as production
+FROM python:3.11-slim as production
 
-RUN apk add --no-cache \
-  libpq \
+RUN apt-get update && apt-get install -y \
+  libpq5 \
   curl \
-  openblas \
-  && rm -rf /var/cache/apk/*
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 COPY --from=builder /.venv /.venv
@@ -37,7 +30,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
   UV_SYSTEM_PYTHON=1
 
-RUN addgroup -S appuser && adduser -S -G appuser appuser
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 

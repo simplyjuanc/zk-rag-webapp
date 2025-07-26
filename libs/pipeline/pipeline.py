@@ -17,7 +17,7 @@ from .watchers.file_watcher import FileWatcher
 from libs.pipeline.document_processor import DocumentProcessor
 
 from .watchers.source_watcher import SourceWatcher
-from .embedder import OllamaEmbedder, DocumentEmbedder, SimilarityCalculator
+from .embedder import EmbeddingService, DocumentEmbedder, SimilarityCalculator
 
 # --- DB Storage Callback for Pipeline ---
 from libs.storage.db import get_db_session
@@ -40,7 +40,7 @@ class DataPipeline:
         self.file_watcher: SourceWatcher = FileWatcher(self.config.watch_directory)
         self.processor = DocumentProcessor()
 
-        self.ollama_embedder = OllamaEmbedder(
+        self.ollama_embedder = EmbeddingService(
             self.config.ollama_url, self.config.embedding_model
         )
         self.document_embedder = DocumentEmbedder(self.ollama_embedder)

@@ -2,7 +2,6 @@ from libs.models.pipeline import FileEventType
 from libs.pipeline.watchers.source_watcher import SourceWatcher
 from libs.pipeline.markdown_file_handler import MarkdownFileHandler, logger
 
-
 from watchdog.observers import Observer
 
 

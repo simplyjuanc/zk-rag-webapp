@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 # Add the project root to the Python path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent))
 
 from libs.models.pipeline import FileEventType
 from libs.pipeline import DataPipeline
