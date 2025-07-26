@@ -18,9 +18,9 @@ from libs.storage.mappers.pipeline_mappers import (
 )
 from libs.storage.db import get_db_session
 
-# Configure logging
+
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)

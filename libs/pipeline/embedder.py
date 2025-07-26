@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List
 from datetime import datetime, timezone
 import httpx
@@ -14,23 +15,21 @@ BASE_EMBEDDING = [0.0] * DEFAULT_EMBEDDING_SIZE
 
 
 class EmbeddingResult(BaseModel):
-    """Result from embedding a text."""
-
     embedding: List[float]
     embedding_model: str
     embedding_created_at: datetime
 
 
 class EmbeddingBatch(BaseModel):
-    """Batch of embeddings."""
-
     embeddings: List[EmbeddingResult]
     batch_created_at: datetime
 
 
 class OllamaEmbedder:
     def __init__(
-        self, base_url: str = "http://localhost:11434", model: str = "nomic-embed-text"
+        self, 
+        base_url: str = os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
+        model: str = os.getenv("LLM_EMBEDDINGS_MODEL", "nomic-embed-text")
     ):
         self.base_url = base_url.rstrip("/")
         self.model = model
