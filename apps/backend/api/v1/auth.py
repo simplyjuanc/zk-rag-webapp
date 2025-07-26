@@ -1,10 +1,9 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
-from passlib.context import CryptContext
 
-from apps.backend.services.auth import user_service_injection
+from apps.backend.services.user import user_service_injection
 from libs.models.User import User, UserCreateRequest, Token
 from libs.storage.repositories.user import user_repo_injection
 
