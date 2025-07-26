@@ -1,13 +1,12 @@
+from typing import List, Optional, Any, Dict
 from enum import Enum
-from typing import List, Optional
 from pydantic import BaseModel, AnyHttpUrl, Field
 
 # Taken from required models from: https://docs.github.com/en/webhooks/webhook-events-and-payloads#push
 # There are more fields available in the Github payload
 
+
 class User(BaseModel):
-    name: Optional[str]
-    email: Optional[str]
     login: Optional[str]
     id: Optional[int]
     node_id: Optional[str]
@@ -15,6 +14,8 @@ class User(BaseModel):
     html_url: Optional[AnyHttpUrl]
     type: Optional[str]
     site_admin: Optional[bool]
+    # name and email are not always present in sender, so remove them from here
+
 
 class Repository(BaseModel):
     id: int
@@ -28,13 +29,18 @@ class Repository(BaseModel):
     fork: Optional[bool]
     url: Optional[AnyHttpUrl]
 
+
 class CommitAuthor(BaseModel):
-    name: str
-    email: str
-    username: Optional[str]
+    name: Optional[str]
+    email: Optional[str]
+    # Remove username, as it's not present in pusher
+
+    class Config:
+        extra = "allow"
+
 
 class Commit(BaseModel):
-    id: str
+    id: Optional[str]
     tree_id: Optional[str]
     distinct: Optional[bool]
     message: Optional[str]
@@ -46,6 +52,10 @@ class Commit(BaseModel):
     removed: Optional[List[str]]
     modified: Optional[List[str]]
 
+    class Config:
+        extra = "allow"
+
+
 class PushEvent(BaseModel):
     ref: str
     before: str
@@ -56,29 +66,38 @@ class PushEvent(BaseModel):
     base_ref: Optional[str]
     compare: Optional[AnyHttpUrl]
     commits: List[Commit]
-    head_commit: Optional[Commit]
-    repository: Repository
-    pusher: Optional[CommitAuthor]
-    sender: Optional[User]
+
+    class Config:
+        extra = "allow"
 
 
-class GithubEventTypes(Enum):
+class GithubEventTypes(str, Enum):
     PUSH = "push"
     PING = "ping"
     PULL_REQUEST = "pull_request"
+    OTHER = "other"
 
+    @classmethod
+    def _missing_(cls, value: object) -> "GithubEventTypes":
+        # If the value is not one of the defined enum values, return OTHER
+        return cls.OTHER
 
 
 class GitHubWebhookHeaders(BaseModel):
-    x_github_hook_id: str = Field(alias='x-github-hook-id')
-    x_github_event: GithubEventTypes = Field(alias='x-github-event')
-    x_github_delivery: str = Field(alias='x-github-delivery')
-    x_hub_signature: Optional[str] = Field(default=None, alias='x-hub-signature')
-    x_hub_signature_256: Optional[str] = Field(default=None, alias='x-hub-signature-256')
-    user_agent: str = Field(alias='user-agent')
-    x_github_hook_installation_target_type: Optional[str] = Field(default=None, alias='x-github-hook-installation-target-type')
-    x_github_hook_installation_target_id: Optional[str] = Field(default=None, alias='x-github-hook-installation-target-id')
+    x_github_hook_id: str = Field(alias="x-github-hook-id")
+    x_github_event: GithubEventTypes = Field(alias="x-github-event")
+    x_github_delivery: str = Field(alias="x-github-delivery")
+    x_hub_signature: Optional[str] = Field(default=None, alias="x-hub-signature")
+    x_hub_signature_256: Optional[str] = Field(
+        default=None, alias="x-hub-signature-256"
+    )
+    user_agent: str = Field(alias="user-agent")
+    x_github_hook_installation_target_type: Optional[str] = Field(
+        default=None, alias="x-github-hook-installation-target-type"
+    )
+    x_github_hook_installation_target_id: Optional[str] = Field(
+        default=None, alias="x-github-hook-installation-target-id"
+    )
 
     class Config:
         allow_population_by_field_name = True
-

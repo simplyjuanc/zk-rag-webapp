@@ -27,9 +27,9 @@ class EmbeddingBatch(BaseModel):
 
 class OllamaEmbedder:
     def __init__(
-        self, 
+        self,
         base_url: str = os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
-        model: str = os.getenv("LLM_EMBEDDINGS_MODEL", "nomic-embed-text")
+        model: str = os.getenv("LLM_EMBEDDINGS_MODEL", "nomic-embed-text"),
     ):
         self.base_url = base_url.rstrip("/")
         self.model = model

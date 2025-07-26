@@ -13,10 +13,10 @@ from libs.storage.db import init_db
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
