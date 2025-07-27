@@ -8,11 +8,8 @@ from pathlib import Path
 
 from libs.models.pipeline import EmbeddedChunk, TextChunk
 from libs.models.documents import ProcessedDocument
-from libs.models.Embeddings import EmbeddingsBatch
-from libs.pipeline.embedder import (
-    EmbeddingService,
-    SimilarityCalculator,
-)
+from libs.models.embeddings import EmbeddingsBatch
+from libs.pipeline.embedder import SimilarityCalculator
 from libs.utils.document_processor.document_processor import DocumentProcessor
 
 

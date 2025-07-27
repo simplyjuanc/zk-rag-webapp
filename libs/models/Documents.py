@@ -57,3 +57,18 @@ class Document(ProcessedDocument):
 
     def __str__(self) -> str:
         return f"Document(id={self.id}, name={self.metadata.frontmatter_metadata.title if self.metadata.frontmatter_metadata else 'N/A'}, created_at={self.created_at})"
+
+    @classmethod
+    def from_document_and_embeddings(
+        cls, document: ProcessedDocument, embedded_chunks: List[EmbeddedChunk]
+    ) -> "Document":
+        return cls(
+            id=document.id,
+            metadata=document.metadata,
+            content=document.content,
+            content_hash=document.content_hash,
+            created_at=document.created_at,
+            updated_at=document.updated_at,
+            deleted_at=document.deleted_at,
+            embedded_chunks=embedded_chunks,
+        )

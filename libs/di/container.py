@@ -1,7 +1,9 @@
 from apps.backend.handler.github_handler import GithubHandler
+from apps.backend.services.embedding_service import EmbeddingService
 from apps.backend.services.document_service import DocumentService
 from dependency_injector import containers, providers
 
+from libs.clients.github_client import GithubClient
 from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
 from libs.storage.repositories.user import UserRepository
@@ -18,10 +20,15 @@ class Container(containers.DeclarativeContainer):
     db_session = providers.Resource(get_db_session)
 
     # Repositories
-    document_repo = providers.Factory(DocumentRepository, session=db_session)
-    user_repo = providers.Factory(UserRepository, session=db_session)
+    document_repo = providers.Singleton(DocumentRepository, session=db_session)
+    user_repo = providers.Singleton(UserRepository, session=db_session)
 
-    # Pipeline Configuration
+    # Clients
+    github_client: providers.Factory[GithubClient] = providers.Factory(
+        GithubClient,
+    )
+
+    # Pipeline
     pipeline_config = providers.Singleton(
         PipelineConfig,
         watch_directory="",  # Not used for manual processing
@@ -34,19 +41,26 @@ class Container(containers.DeclarativeContainer):
     pipeline = providers.Singleton(DataPipeline, config=pipeline_config)
 
     # Services
-    embedding_service: providers.Factory[DocumentService] = providers.Factory(
-        "apps.backend.services.document.DocumentService",
+    embedding_service: providers.Singleton[EmbeddingService] = providers.Singleton(
+        EmbeddingService,
+    )
+    document_service: providers.Singleton[DocumentService] = providers.Singleton(
+        DocumentService,
         document_repo=document_repo,
+        embedding_service=embedding_service,
         pipeline=pipeline,
     )
 
     # Handlers
-    github_handler: providers.Factory[GithubHandler] = providers.Factory(
-        "apps.backend.handler.github.GithubHandler", embedding_service=embedding_service
+    github_handler: providers.Singleton[GithubHandler] = providers.Singleton(
+        GithubHandler,
+        document_service=document_service,
+        embedding_service=embedding_service,
+        github_client=github_client,
     )
 
 
 container = Container()
-# dependency-injector library does not
-# recognise pydantic settings from the constructor
+# assignment needed because dependency-injector
+# does not recognise pydantic settings from the constructor
 container.config.from_dict(settings.model_dump())

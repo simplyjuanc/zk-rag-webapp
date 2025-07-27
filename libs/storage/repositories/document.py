@@ -1,4 +1,5 @@
 from ast import Not
+from calendar import c
 from typing import List, Optional, Annotated
 from httpx import delete
 from sqlalchemy.orm import Session
@@ -24,19 +25,9 @@ class DocumentRepository:
                 setattr(existing_doc, key, value)
 
             if document.embedded_chunks:
-                existing_chunks = existing_doc.embedded_chunks
-                existing_chunk_ids = {chunk.id for chunk in existing_chunks}
-                incoming_chunk_ids = {chunk.id for chunk in document.embedded_chunks}
-
-                chunks_to_delete = existing_chunk_ids - incoming_chunk_ids
-                for chunk_id in chunks_to_delete:
-                    self.delete_chunk(chunk_id)
-
-                for chunk_data in document.embedded_chunks:
-                    if chunk_data.id in existing_chunk_ids:
-                        self.update_chunk(chunk_data)
-                    else:
-                        self.create_chunk(chunk_data)
+                self._sync_document_chunks(
+                    document.embedded_chunks, existing_doc.embedded_chunks
+                )
 
             self.session.commit()
             return existing_doc
@@ -57,7 +48,7 @@ class DocumentRepository:
 
             if document.embedded_chunks:
                 for chunk_data in document.embedded_chunks:
-                    self.create_chunk(chunk_data)
+                    self._create_chunk(chunk_data)
                 self.session.commit()
 
             return self.get_full_document(doc.id)
@@ -88,11 +79,35 @@ class DocumentRepository:
     def delete_document(self, doc_id: str) -> None:
         raise NotImplementedError
 
-    def delete_chunk(self, chunk_id: str) -> None:
+    def _sync_document_chunks(
+        self, new_chunks: list[EmbeddedChunk], current_chunks: list[EmbeddedChunk]
+    ) -> None:
+        if new_chunks[0].id != current_chunks[0].id:
+            raise ValueError("Chunk IDs do not match between new and current chunks.")
+        try:
+            existing_chunk_ids = {chunk.id for chunk in current_chunks}
+            incoming_chunk_ids = {chunk.id for chunk in new_chunks}
+
+            chunks_to_delete = existing_chunk_ids - incoming_chunk_ids
+            for chunk_id in chunks_to_delete:
+                self._delete_chunk(chunk_id)
+
+            for chunk_data in new_chunks:
+                if chunk_data.id in existing_chunk_ids:
+                    self._update_chunk(chunk_data)
+                else:
+                    self._create_chunk(chunk_data)
+
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+
+    def _delete_chunk(self, chunk_id: str) -> None:
         raise NotImplementedError
 
-    def update_chunk(self, chunk_data: EmbeddedChunk) -> None:
+    def _update_chunk(self, chunk_data: EmbeddedChunk) -> None:
         raise NotImplementedError
 
-    def create_chunk(self, chunk_data: EmbeddedChunk) -> None:
+    def _create_chunk(self, chunk_data: EmbeddedChunk) -> None:
         raise NotImplementedError

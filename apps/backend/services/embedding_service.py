@@ -5,6 +5,7 @@ import logging
 
 import httpx
 from libs.models.embeddings import Embedding, EmbeddingsBatch
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +14,9 @@ BASE_EMBEDDING = [0.0] * DEFAULT_EMBEDDING_SIZE
 
 
 class EmbeddingService:
-    def __init__(
-        self,
-        base_url: str = os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
-        model: str = os.getenv("LLM_EMBEDDINGS_MODEL", "nomic-embed-text"),
-    ):
-        self.base_url = base_url.rstrip("/")
-        self.model = model
+    def __init__(self) -> None:
+        self.base_url = settings.ollama_url
+        self.model = settings.llm_embeddings_model
         self.client = httpx.AsyncClient(timeout=30.0)
 
     async def generate_embedding(self, text: str) -> Embedding:

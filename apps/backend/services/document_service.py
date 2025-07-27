@@ -1,5 +1,4 @@
 import datetime
-from tkinter import E
 from typing import List
 from pathlib import Path
 import logging

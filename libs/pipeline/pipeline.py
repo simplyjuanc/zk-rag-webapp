@@ -2,27 +2,31 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Optional, Callable, Awaitable
-import uuid
 
+from apps.backend.services.embedding_service import EmbeddingService
 from libs.models.pipeline import (
     PipelineConfig,
     FileEvent,
     FileEventType,
-    TextChunk,
     PipelineResult,
     PipelineStatus,
     PipelineCallback,
+)
+from libs.models.pipeline.metadata import (
+    DocumentMetadata,
+    FileMetadata,
+    FrontmatterMetadata,
 )
 from libs.utils.document_processor.document_processor import DocumentProcessor
 from .watchers.file_watcher import FileWatcher
 
 from .watchers.source_watcher import SourceWatcher
-from .embedder import EmbeddingService, DocumentEmbedder, SimilarityCalculator
+from .embedder import DocumentEmbedder, SimilarityCalculator
 
 # --- DB Storage Callback for Pipeline ---
 from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
-from libs.models.documents import Document as DocumentDB
+from libs.models.documents import Document
 from libs.models.pipeline.processor import PipelineResult
 
 logger = logging.getLogger(__name__)
@@ -40,9 +44,9 @@ class DataPipeline:
         self.file_watcher: SourceWatcher = FileWatcher(self.config.watch_directory)
         self.processor = DocumentProcessor()
 
-        self.ollama_embedder = EmbeddingService(
-            self.config.ollama_url, self.config.embedding_model
-        )
+        # TODO: These services should be injected rather than instantiated here
+        #  It's generating issues with circular imports and handling events
+        self.ollama_embedder = EmbeddingService()
         self.document_embedder = DocumentEmbedder(self.ollama_embedder)
         self.similarity_calculator = SimilarityCalculator()
 
@@ -196,73 +200,23 @@ class DataPipeline:
 def pipeline_db_storage_callback_factory() -> Callable[
     [PipelineResult], Awaitable[None]
 ]:
-    async def pipeline_db_storage_callback(result: PipelineResult) -> None:
-        # Only store if document and chunks are present
+    async def save_embedded_document_callback(result: PipelineResult) -> None:
         if not result.document or not result.chunks:
             return
-        # Map ProcessedDocument to DocumentDB fields
-        # Use the Pydantic DocumentDB model for mapping, leveraging its validation and defaults.
-        from libs.models.Documents import DocumentDB
 
         # Compose a dict with all possible fields, letting Pydantic handle missing/optional ones.
-        file_meta = (
-            getattr(result.document.metadata, "file_metadata", None)
-            if result.document.metadata
-            else None
+        # Create Document object using proper Pydantic validation
+        embedded_document = Document.from_document_and_embeddings(
+            document=result.document, embedded_chunks=result.chunks or []
         )
-        front_meta = (
-            getattr(result.document.metadata, "frontmatter_metadata", None)
-            if result.document.metadata
-            else None
-        )
-
-        doc_db_model = DocumentDB(
-            id=getattr(result.document, "id", None) or uuid.uuid4().hex,
-            file_path=getattr(file_meta, "file_path", None) or "",
-            file_name=getattr(file_meta, "file_name", None) or "",
-            file_extension=getattr(file_meta, "file_extension", None) or "",
-            file_size=getattr(file_meta, "file_size", None) or 0,
-            content_hash=result.document.content_hash,
-            raw_content=result.document.raw_content,
-            processed_content=result.document.content,
-            title=getattr(front_meta, "title", None),
-            author=getattr(front_meta, "author", None),
-            document_type=getattr(front_meta, "type", None),
-            category=getattr(front_meta, "category", None),
-            tags=getattr(front_meta, "tags", None),
-            source=getattr(front_meta, "source", None),
-            created_on=getattr(front_meta, "created_on", None),
-            last_updated=getattr(front_meta, "last_updated", None),
-            content_created_at=getattr(file_meta, "content_created_at", None),
-            content_modified_at=getattr(file_meta, "content_modified_at", None),
-            processed_at=str(result.document.processed_at)
-            if result.document.processed_at
-            else None,
-        )
-        # Use sync DB session in thread executor
-        loop = asyncio.get_event_loop()
 
         def sync_db_ops() -> None:
             session = next(get_db_session())
             repo = DocumentRepository(session)
-            doc_db = repo.create_document(doc_db_model)
-            if result.chunks:
-                for chunk in result.chunks:
-                    chunk_data = DocumentChunkDB(
-                        id=chunk.id,
-                        document_id=doc_db.id,
-                        content=chunk.content,
-                        content_hash=chunk.content_hash,
-                        chunk_index=chunk.chunk_index,
-                        embedding=str(getattr(chunk, "embedding", None)),
-                        embedding_model=getattr(chunk, "embedding_model", None),
-                        embedding_created_at=str(
-                            getattr(chunk, "embedding_created_at", None)
-                        ),
-                    )
-                    repo.create_chunk(chunk_data)
+            repo.create_document(embedded_document)
             session.close()
 
+        loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, sync_db_ops)
 
-    return pipeline_db_storage_callback
+    return save_embedded_document_callback

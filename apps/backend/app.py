@@ -28,8 +28,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             "apps.backend.api.health",
             "apps.backend.api.webhooks",
             "apps.backend.api.v1.auth",
-            "apps.backend.handler.github",
-            "apps.backend.services.document",
+            "apps.backend.handler.github_handler",
+            "apps.backend.services.document_service",
             "apps.backend.services.user",
         ]
     )

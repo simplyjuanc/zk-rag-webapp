@@ -8,14 +8,11 @@ from pathlib import Path
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from libs.models.documents import Document
 from libs.models.pipeline import FileEventType
 from libs.pipeline import DataPipeline
 from libs.models.pipeline import PipelineConfig, PipelineResult
 from libs.storage.repositories.document import DocumentRepository
-from libs.storage.mappers.pipeline_mappers import (
-    map_processed_document_to_db,
-    map_pipeline_chunks_to_db,
-)
 from libs.storage.db import get_db_session
 
 
@@ -38,23 +35,21 @@ async def store_pipeline_results_to_db(result: PipelineResult) -> None:
 
     session = next(get_db_session())
     doc_repo = DocumentRepository(session)
+
     try:
-        mapped_document = map_processed_document_to_db(result.document)
+        mapped_document = Document.from_document_and_embeddings(
+            result.document, result.chunks
+        )
         stored_document = doc_repo.create_document(mapped_document)
-
-        mapped_chunks = map_pipeline_chunks_to_db(result.chunks, stored_document.id)
-        stored_chunks = []
-        for chunk_db in mapped_chunks:
-            stored_chunk = doc_repo.create_chunk(chunk_db)
-            stored_chunks.append(stored_chunk)
-
         title = (
             stored_document.metadata.frontmatter_metadata.title
             if stored_document.metadata.frontmatter_metadata
             else "Unknown"
         )
 
-        logger.info(f"Stored {len(stored_chunks)} chunks for document {title}")
+        logger.info(
+            f'Stored {len(stored_document.embedded_chunks)} chunks for document "{title}"'
+        )
 
     except Exception as e:
         logger.error(f"Error storing pipeline results to database: {e}")
