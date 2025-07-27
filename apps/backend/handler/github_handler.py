@@ -8,7 +8,7 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from dependency_injector.wiring import inject, Provide
-from apps.backend.services import document_service
+from libs.clients.github_client import GithubClient
 from apps.backend.services.embedding_service import EmbeddingService
 from config import settings
 from libs.models.third_party.github import (
@@ -17,15 +17,9 @@ from libs.models.third_party.github import (
     PushEvent,
 )
 from apps.backend.services.document_service import DocumentService
-from libs.pipeline.pipeline import DataPipeline
 
 
 logger = logging.getLogger(__name__)
-
-
-class GithubClient:
-    def get_files_content(self, file_list: List[str], repo_full_name: str) -> List[str]:
-        raise NotImplementedError
 
 
 class GithubHandler:
@@ -40,7 +34,7 @@ class GithubHandler:
         self.embedding_service = embedding_service
         self.github_client = github_client
 
-    async def handle_event(self, request: Request) -> JSONResponse:
+    async def handle_event(self, request: Request) -> None:
         try:
             webhook_headers = GithubWebhookHeaders.model_validate(dict(request.headers))
         except ValidationError as e:
@@ -55,7 +49,6 @@ class GithubHandler:
 
         if webhook_headers.x_github_event == GithubEventTypes.PING:
             logger.info(f"GitHub ping event received.")
-            return JSONResponse(content={"message": "Ping event received."})
         if webhook_headers.x_github_event != GithubEventTypes.PUSH:
             logger.info(
                 f"Unsupported GitHub event type: {webhook_headers.x_github_event}"
@@ -67,7 +60,6 @@ class GithubHandler:
 
         push_event = PushEvent.model_validate_json(payload)
         await self._handle_github_push_event(push_event)
-        return JSONResponse(content={"message": "Push event processed successfully."})
 
     async def _handle_github_push_event(self, event: PushEvent) -> None:
         commits = event.commits
