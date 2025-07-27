@@ -11,6 +11,6 @@ class Embedding(BaseModel):
     embedding_created_at: datetime
 
 
-class BatchEmbedding(BaseModel):
+class EmbeddingsBatch(BaseModel):
     embeddings: List[Embedding]
-    batch_created_at: datetime
+    created_at: datetime

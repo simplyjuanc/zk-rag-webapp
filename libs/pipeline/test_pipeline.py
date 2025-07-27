@@ -6,9 +6,9 @@ import tempfile
 import os
 from pathlib import Path
 
-from libs.models.pipeline import EmbeddedChunk, DocumentChunk
-from libs.models.pipeline.documents import ProcessedDocument
-from libs.models.Embeddings import BatchEmbedding
+from libs.models.pipeline import EmbeddedChunk, TextChunk
+from libs.models.documents import ProcessedDocument
+from libs.models.Embeddings import EmbeddingsBatch
 from libs.pipeline.embedder import (
     EmbeddingService,
     SimilarityCalculator,
@@ -16,7 +16,7 @@ from libs.pipeline.embedder import (
 from libs.utils.document_processor.document_processor import DocumentProcessor
 
 
-async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
+async def test_processor() -> tuple[ProcessedDocument, list[TextChunk]]:
     """Test the document processor."""
     print("Testing DocumentProcessor...")
     test_content = """---
@@ -66,21 +66,19 @@ async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
             f"  - Created: {result.metadata.frontmatter_metadata.created_on if result.metadata.frontmatter_metadata.created_on else 'N/A'}"
         )
 
-        if not result.processed_content:
+        if not result.content:
             raise ValueError("Processed document has no content")
 
-        chunks = processor.extract_chunks(
-            result.processed_content, chunk_size=100, overlap=20
-        )
+        chunks = processor.extract_chunks(result.content, chunk_size=100, overlap=20)
         print(f"  - Generated {len(chunks)} chunks")
 
-        return result, [DocumentChunk.model_validate(chunk) for chunk in chunks]
+        return result, [TextChunk.model_validate(chunk) for chunk in chunks]
 
     finally:
         os.unlink(temp_file)
 
 
-async def test_embedder() -> BatchEmbedding | None:
+async def test_embedder() -> EmbeddingsBatch | None:
     """Test the document embedder."""
     print("\nTesting DocumentEmbedder...")
 
@@ -90,7 +88,7 @@ async def test_embedder() -> BatchEmbedding | None:
 
         # Test single embedding
         test_text = "This is a test sentence for embedding."
-        embedding = await embedder.embed_text(test_text)
+        embedding = await embedder.generate_embedding(test_text)
 
         print(f"✓ Generated embedding of length: {len(embedding.embedding)}")
         print(f"  - First few values: {embedding.embedding[:5]}")
@@ -102,7 +100,7 @@ async def test_embedder() -> BatchEmbedding | None:
             "Third test sentence.",
         ]
 
-        batch_embedding_result = await embedder.embed_batch(test_texts)
+        batch_embedding_result = await embedder.generate_multiple_embeddings(test_texts)
         embeddings = batch_embedding_result.embeddings
         print(f"✓ Generated {len(embeddings)} batch embeddings")
 
@@ -149,7 +147,7 @@ async def test_pipeline_integration() -> bool:
                     i % len(embeddings.embeddings)
                 ].embedding,
                 embedding_model="nomic-embed-text",
-                embedding_created_at=embeddings.batch_created_at,
+                embedding_created_at=embeddings.created_at,
             )
             embedded_chunks.append(embedded_chunk)
 

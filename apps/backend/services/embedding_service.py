@@ -1,26 +1,84 @@
+from datetime import datetime, timezone
+import os
 from typing import List
-from pathlib import Path
 import logging
-from dependency_injector.wiring import inject, Provide
-from libs.storage.repositories.document import DocumentRepository
-from libs.pipeline.pipeline import DataPipeline
+
+import httpx
+from libs.models.embeddings import Embedding, EmbeddingsBatch
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_EMBEDDING_SIZE = 1536
+BASE_EMBEDDING = [0.0] * DEFAULT_EMBEDDING_SIZE
+
 
 class EmbeddingService:
-    @inject
     def __init__(
         self,
-        document_repo: DocumentRepository = Provide["Container.document_repo"],
-        pipeline: DataPipeline = Provide["Container.pipeline"],
-    ) -> None:
-        self.document_repo = document_repo
-        self.pipeline = pipeline
-        self.repo_base_path = Path.cwd()
+        base_url: str = os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
+        model: str = os.getenv("LLM_EMBEDDINGS_MODEL", "nomic-embed-text"),
+    ):
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.client = httpx.AsyncClient(timeout=30.0)
 
-    async def process_modified_files(self, files: List[str]) -> None:
-        pass
+    async def generate_embedding(self, text: str) -> Embedding:
+        try:
+            response = await self.client.post(
+                f"{self.base_url}/api/embeddings",
+                json={"model": self.model, "prompt": text},
+            )
+            response.raise_for_status()
 
-    async def remove_documents(self, files: List[str]) -> None:
-        pass
+            data = response.json()
+            embedding = data.get("embedding", [])
+
+            if not embedding:
+                raise ValueError("No embedding returned from Ollama")
+            if not isinstance(embedding, list):
+                raise ValueError("Embedding returned is not a list")
+            try:
+                embedding_floats = [float(x) for x in embedding]
+            except Exception as conv_e:
+                logger.error(f"Failed to convert embedding values to float: {conv_e}")
+                raise ValueError("Embedding contains non-numeric values") from conv_e
+
+            logger.debug(f"Generated embedding of length {len(embedding)}")
+            return Embedding(
+                embedding=embedding_floats,
+                embedding_model=self.model,
+                embedding_created_at=datetime.now(timezone.utc),
+            )
+        except Exception as e:
+            logger.error(f"Error generating embedding: {e}")
+            raise
+
+    async def generate_multiple_embeddings(self, texts: List[str]) -> EmbeddingsBatch:
+        embeddings: List[Embedding] = []
+        batch_created_at = datetime.now(timezone.utc)
+
+        for i, text in enumerate(texts):
+            try:
+                embedding = await self.generate_embedding(text)
+                embeddings.append(embedding)
+
+                if (i + 1) % 10 == 0:
+                    logger.info(f"Processed {i + 1}/{len(texts)} embeddings")
+
+            except Exception as e:
+                logger.error(f"Error embedding text {i}: {e}")
+                embeddings.append(
+                    Embedding(
+                        embedding=BASE_EMBEDDING,
+                        embedding_model=self.model,
+                        embedding_created_at=datetime.now(timezone.utc),
+                    )
+                )
+
+        return EmbeddingsBatch(
+            embeddings=embeddings,
+            created_at=batch_created_at,
+        )
+
+    async def close(self) -> None:
+        await self.client.aclose()

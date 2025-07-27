@@ -1,45 +1,59 @@
-from pydantic import BaseModel
+from datetime import datetime
 from typing import List, Optional
+from pydantic import BaseModel
+
+from libs.models.embeddings import Embedding
+
+from .pipeline.metadata import DocumentMetadata, FrontmatterMetadata
 
 
-class DocumentChunkDB(BaseModel):
+class ParsedContent(BaseModel):
+    metadata: FrontmatterMetadata
+    content: str
+
+
+class TextChunk(BaseModel):
     id: str
     document_id: str
     content: str
     content_hash: str
     chunk_index: int
-    chunk_type: Optional[str] = None
-    start_char: Optional[int] = None
-    end_char: Optional[int] = None
-    parent_section: Optional[str] = None
-    token_count: Optional[int] = None
-    estimated_tokens: Optional[int] = None
-    embedding: Optional[str] = None
-    embedding_model: Optional[str] = None
-    embedding_created_at: Optional[str] = None
-    semantic_similarity: Optional[float] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    word_count_estimate: int
 
 
-class DocumentDB(BaseModel):
+class EmbeddedChunk(TextChunk):
+    embedding: Optional[Embedding]
+
+    def __str__(self) -> str:
+        return f"EmbeddedChunk(id={self.id}, document_id={self.document_id}, chunk_index={self.chunk_index})"
+
+    @classmethod
+    def from_text_chunk(
+        cls, text_chunk: TextChunk, embedding: Embedding
+    ) -> "EmbeddedChunk":
+        return cls(
+            id=text_chunk.id,
+            document_id=text_chunk.document_id,
+            content=text_chunk.content,
+            content_hash=text_chunk.content_hash,
+            chunk_index=text_chunk.chunk_index,
+            word_count_estimate=text_chunk.word_count_estimate,
+            embedding=embedding,
+        )
+
+
+class ProcessedDocument(BaseModel):
     id: str
-    file_path: str
-    file_name: str
-    file_extension: str
-    file_size: int
+    metadata: DocumentMetadata
+    content: str
     content_hash: str
-    raw_content: Optional[str] = None
-    processed_content: Optional[str] = None
-    title: Optional[str] = None
-    author: Optional[str] = None
-    document_type: Optional[str] = None
-    category: Optional[str] = None
-    tags: Optional[str] = None
-    source: Optional[str] = None
-    created_on: Optional[str] = None
-    last_updated: Optional[str] = None
-    content_created_at: Optional[str] = None
-    content_modified_at: Optional[str] = None
-    processed_at: Optional[str] = None
-    chunks: Optional[List[DocumentChunkDB]] = None
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: Optional[datetime] = None
+
+
+class Document(ProcessedDocument):
+    embedded_chunks: List[EmbeddedChunk] = []
+
+    def __str__(self) -> str:
+        return f"Document(id={self.id}, name={self.metadata.frontmatter_metadata.title if self.metadata.frontmatter_metadata else 'N/A'}, created_at={self.created_at})"

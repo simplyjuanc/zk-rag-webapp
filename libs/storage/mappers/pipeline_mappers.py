@@ -3,8 +3,7 @@ import uuid
 from typing import List
 from datetime import datetime
 
-from libs.models.pipeline import ProcessedDocument, EmbeddedChunk
-from libs.models.Documents import DocumentDB, DocumentChunkDB
+from libs.models.pipeline import ProcessedDocument
 
 
 def map_processed_document_to_db(processed_doc: ProcessedDocument) -> DocumentDB:
@@ -51,7 +50,7 @@ def map_processed_document_to_db(processed_doc: ProcessedDocument) -> DocumentDB
         file_size=file_metadata.file_size if file_metadata else 0,
         content_hash=processed_doc.content_hash,
         raw_content=processed_doc.raw_content,
-        processed_content=processed_doc.processed_content,
+        processed_content=processed_doc.content,
         title=frontmatter.title if frontmatter else None,
         author=author_str,
         document_type=document_type_str,

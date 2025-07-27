@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request
+from http import HTTPStatus
+from fastapi import APIRouter, BackgroundTasks, Request
 import logging
 from starlette.responses import JSONResponse
 from dependency_injector.wiring import inject, Provide
@@ -13,9 +14,10 @@ WebhooksRouter = APIRouter(
 )
 
 
-@WebhooksRouter.post("/github")
+@WebhooksRouter.post("/github", status_code=HTTPStatus.ACCEPTED)
 async def handle_github_webhook(
     request: Request,
-) -> JSONResponse:
+    background_tasks: BackgroundTasks,
+) -> None:
     handler: GithubHandler = Container.github_handler()
-    return await handler.handle_event(request)
+    background_tasks.add_task(handler.handle_event, request)

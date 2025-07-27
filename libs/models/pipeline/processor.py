@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Awaitable, Callable, List, Optional
 from pydantic import BaseModel
 
-from .documents import ProcessedDocument, EmbeddedChunk
+from ..documents import ProcessedDocument, EmbeddedChunk
 from .events import FileEventType
 
 

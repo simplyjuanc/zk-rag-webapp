@@ -4,7 +4,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 import logging
-from libs.models.pipeline import DocumentMetadata, ProcessedDocument, DocumentChunk
+
+from libs.models.documents import TextChunk, ProcessedDocument
+from libs.models.pipeline.metadata import DocumentMetadata
 from .metadata_extractor import MetadataValidator
 from .content_parser import MarkdownParser
 
@@ -30,14 +32,16 @@ class DocumentProcessor:
             )
 
             result = ProcessedDocument(
+                id=uuid.uuid4().hex,
                 metadata=DocumentMetadata(
                     file_metadata=file_metadata,
                     frontmatter_metadata=parsed_content.metadata,
                 ),
-                raw_content=content,
-                processed_content=parsed_content.content,
+                content=parsed_content.content,
                 content_hash=self.__calculate_content_hash(parsed_content.content),
-                processed_at=datetime.now(timezone.utc),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+                deleted_at=None,
             )
 
             logger.info(f"Processed document: {file_path.name}")
@@ -49,16 +53,15 @@ class DocumentProcessor:
 
     def extract_chunks(
         self, content: str, chunk_size: int = 1000, overlap: int = 200
-    ) -> List[DocumentChunk]:
-        chunks: List[DocumentChunk] = []
+    ) -> List[TextChunk]:
+        chunks: List[TextChunk] = []
         lines = content.split("\n")
         current_chunk: List[str] = []
         current_length = 0
-        chunk_start_line = 0
 
         document_id = uuid.uuid4().hex
 
-        for idx, line in enumerate(lines):
+        for line in lines:
             line_length = len(line) + 1  # +1 for newline
 
             # If we can add the line to the current chunk, do it
@@ -69,13 +72,12 @@ class DocumentProcessor:
                 # Else finalise the current chunk and start a new one
                 chunk_text = "\n".join(current_chunk)
                 chunks.append(
-                    DocumentChunk(
+                    TextChunk(
                         id=uuid.uuid4().hex,
+                        document_id=document_id,
                         content=chunk_text,
                         content_hash=self.__calculate_content_hash(chunk_text),
                         chunk_index=len(chunks),
-                        start_line=chunk_start_line,
-                        end_line=idx - 1,
                         word_count_estimate=len(chunk_text.split()),
                     )
                 )
@@ -92,23 +94,20 @@ class DocumentProcessor:
                     overlap_lines = current_chunk[-overlap_lines_count:]
                     current_chunk = overlap_lines + [line]
                     current_length = sum(len(l) + 1 for l in current_chunk)
-                    chunk_start_line = idx - len(overlap_lines)
                 else:
                     current_chunk = [line]
                     current_length = line_length
-                    chunk_start_line = idx
 
         # Add final chunk if there's remaining content
         if current_chunk:
             chunk_text = "\n".join(current_chunk)
             chunks.append(
-                DocumentChunk(
+                TextChunk(
                     id=uuid.uuid4().hex,
+                    document_id=document_id,
                     content=chunk_text,
                     content_hash=self.__calculate_content_hash(chunk_text),
                     chunk_index=len(chunks),
-                    start_line=chunk_start_line,
-                    end_line=len(lines) - 1,
                     word_count_estimate=len(chunk_text.split()),
                 )
             )

@@ -8,7 +8,7 @@ from libs.models.pipeline import (
     PipelineConfig,
     FileEvent,
     FileEventType,
-    DocumentChunk,
+    TextChunk,
     PipelineResult,
     PipelineStatus,
     PipelineCallback,
@@ -22,7 +22,7 @@ from .embedder import EmbeddingService, DocumentEmbedder, SimilarityCalculator
 # --- DB Storage Callback for Pipeline ---
 from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
-from libs.models.Documents import DocumentDB, DocumentChunkDB
+from libs.models.documents import Document as DocumentDB
 from libs.models.pipeline.processor import PipelineResult
 
 logger = logging.getLogger(__name__)
@@ -138,7 +138,7 @@ class DataPipeline:
         logger.info(f"Processing file: {file_path} ({event_type})")
         processed_document = self.processor.process_document(file_path)
         document_chunks = self.processor.extract_chunks(
-            processed_document.processed_content,
+            processed_document.content,
             self.config.chunk_size,
             self.config.chunk_overlap,
         )
@@ -224,7 +224,7 @@ def pipeline_db_storage_callback_factory() -> Callable[
             file_size=getattr(file_meta, "file_size", None) or 0,
             content_hash=result.document.content_hash,
             raw_content=result.document.raw_content,
-            processed_content=result.document.processed_content,
+            processed_content=result.document.content,
             title=getattr(front_meta, "title", None),
             author=getattr(front_meta, "author", None),
             document_type=getattr(front_meta, "type", None),

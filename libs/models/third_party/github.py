@@ -65,6 +65,7 @@ class PushEvent(BaseModel):
     base_ref: Optional[str]
     compare: Optional[AnyHttpUrl]
     commits: List[Commit]
+    repository: Repository
 
     class Config:
         extra = "allow"

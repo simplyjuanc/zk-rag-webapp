@@ -4,7 +4,7 @@ from .pipeline import (
     FileEvent,
     FileEventType,
     DocumentMetadata,
-    DocumentChunk,
+    TextChunk,
     EmbeddedChunk,
     ProcessedDocument,
     PipelineResult,
@@ -14,7 +14,7 @@ from .pipeline import (
     FrontmatterMetadata,
     ProcessedContent,
     DocumentMetadata,
-    DocumentChunk,
+    TextChunk,
     ParsedContent,
 )
 
@@ -27,7 +27,7 @@ __all__ = [
     "PipelineConfig",
     "FileEvent",
     "DocumentMetadata",
-    "DocumentChunk",
+    "TextChunk",
     "EmbeddedChunk",
     "ProcessedDocument",
     "PipelineResult",
@@ -37,6 +37,6 @@ __all__ = [
     "FrontmatterMetadata",
     "ProcessedContent",
     "DocumentMetadata",
-    "DocumentChunk",
+    "TextChunk",
     "ParsedContent",
 ]

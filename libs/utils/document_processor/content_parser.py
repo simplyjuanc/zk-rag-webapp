@@ -1,7 +1,8 @@
 import re
 import logging
 import frontmatter  # type: ignore
-from libs.models.pipeline import ParsedContent
+
+from libs.models.documents import ParsedContent
 from .metadata_extractor import MetadataValidator
 
 logger = logging.getLogger(__name__)
@@ -36,9 +37,6 @@ class MarkdownParser:
     def clean_content(content: str) -> str:
         # Remove excessive whitespace
         content = re.sub(r"\n\s*\n\s*\n", "\n\n", content)
-
-        # Remove HTML comments
-        content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
 
         # Normalize line endings
         content = content.replace("\r\n", "\n").replace("\r", "\n")

@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from dependency_injector.wiring import inject, Provide
 from apps.backend.services import document_service
+from apps.backend.services.embedding_service import EmbeddingService
 from config import settings
 from libs.models.third_party.github import (
     GithubWebhookHeaders,
@@ -22,12 +23,9 @@ from libs.pipeline.pipeline import DataPipeline
 logger = logging.getLogger(__name__)
 
 
-class EmbeddingJob:
-    def schedule_job(self, files: List[str]) -> None:
-        """Schedule a job to process the modified files."""
-        # This method should be implemented to handle the scheduling logic
-        # For now, we will just log the files
-        logger.info(f"Scheduling job for files: {files}")
+class GithubClient:
+    def get_files_content(self, file_list: List[str], repo_full_name: str) -> List[str]:
+        raise NotImplementedError
 
 
 class GithubHandler:
@@ -35,10 +33,12 @@ class GithubHandler:
     def __init__(
         self,
         document_service: DocumentService = Provide["Container.document_service"],
-        embedding_job: EmbeddingJob = EmbeddingJob(),
+        embedding_service: EmbeddingService = Provide["Container.embedding_service"],
+        github_client: GithubClient = Provide["Container.github_client"],
     ):
         self.document_service = document_service
-        self.embedding_job = embedding_job
+        self.embedding_service = embedding_service
+        self.github_client = github_client
 
     async def handle_event(self, request: Request) -> JSONResponse:
         try:
@@ -64,9 +64,45 @@ class GithubHandler:
                 status_code=HTTPStatus.BAD_REQUEST,
                 detail="Unsupported GitHub event type",
             )
+
         push_event = PushEvent.model_validate_json(payload)
         await self._handle_github_push_event(push_event)
         return JSONResponse(content={"message": "Push event processed successfully."})
+
+    async def _handle_github_push_event(self, event: PushEvent) -> None:
+        commits = event.commits
+        all_modified: List[str] = []
+        all_removed: List[str] = []
+        for commit in commits:
+            if commit.added:
+                all_modified.extend(commit.added)
+            if commit.modified:
+                all_modified.extend(commit.modified)
+            if commit.removed:
+                all_removed.extend(commit.removed)
+
+        modified_md_filelist = self._extract_unique_md_files(all_modified)
+        removed_md_filelist = self._extract_unique_md_files(all_removed)
+
+        logger.info(
+            f"Received push event with {len(commits)} commits, "
+            f"{len(modified_md_filelist)} markdown files to update, "
+            f"{len(removed_md_filelist)} markdown files to be removed."
+        )
+        if modified_md_filelist:
+            logger.info(
+                f"Processing {len(modified_md_filelist)} modified markdown files."
+            )
+            md_file_contents = self.github_client.get_files_content(
+                modified_md_filelist, event.repository.full_name
+            )
+            _ = self.document_service.process_md_files(md_file_contents)
+
+        if removed_md_filelist:
+            _ = self.document_service.sync_documents_removed_from_gh(
+                removed_md_filelist
+            )
+            logger.info(f"Files removed: {removed_md_filelist}")
 
     def _verify_github_signature(
         self, payload_body: bytes, secret_token: str, signature: str | None
@@ -96,33 +132,6 @@ class GithubHandler:
                 status_code=HTTPStatus.FORBIDDEN,
                 detail="Github request signatures didn't match!",
             )
-
-    async def _handle_github_push_event(self, event: PushEvent) -> None:
-        commits = event.commits
-        all_modified: List[str] = []
-        all_removed: List[str] = []
-        for commit in commits:
-            if commit.added:
-                all_modified.extend(commit.added)
-            if commit.modified:
-                all_modified.extend(commit.modified)
-            if commit.removed:
-                all_removed.extend(commit.removed)
-
-        md_files_modified = self._extract_unique_md_files(all_modified)
-        md_files_removed = self._extract_unique_md_files(all_removed)
-
-        logger.info(
-            f"Received push event with {len(commits)} commits, "
-            f"{len(md_files_modified)} markdown files to update, "
-            f"{len(md_files_removed)} markdown files to be removed."
-        )
-        if md_files_modified:
-            logger.info(f"Processing {len(md_files_modified)} modified markdown files")
-            self.embedding_job.schedule_job(md_files_modified)
-        if md_files_removed:
-            _ = self.document_service.remove_documents_from_gh_path(md_files_removed)
-            logger.info(f"Files removed: {md_files_removed}")
 
     def _extract_unique_md_files(self, all_modified: List[str]) -> List[str]:
         files_modified = list(set(all_modified))

@@ -8,7 +8,7 @@ from .models import (
     FileEvent,
     FileEventType,
     DocumentMetadata,
-    DocumentChunk,
+    TextChunk,
     EmbeddedChunk,
     ProcessedDocument,
     PipelineResult,
@@ -16,12 +16,11 @@ from .models import (
     PipelineCallback,
     FileMetadata,
     FrontmatterMetadata,
-    ProcessedContent,
     DocumentMetadata,
     ParsedContent,
-    DocumentChunk,
+    TextChunk,
     EmbeddedChunk,
-    DocumentChunk,
+    TextChunk,
 )
 
 __all__ = [
@@ -29,7 +28,7 @@ __all__ = [
     "FileEvent",
     "FileEventType",
     "DocumentMetadata",
-    "DocumentChunk",
+    "TextChunk",
     "EmbeddedChunk",
     "ProcessedDocument",
     "PipelineResult",
@@ -37,8 +36,7 @@ __all__ = [
     "PipelineCallback",
     "FileMetadata",
     "FrontmatterMetadata",
-    "ProcessedContent",
     "DocumentMetadata",
     "ParsedContent",
-    "DocumentChunk",
+    "TextChunk",
 ]

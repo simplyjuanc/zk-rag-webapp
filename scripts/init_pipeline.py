@@ -48,9 +48,13 @@ async def store_pipeline_results_to_db(result: PipelineResult) -> None:
             stored_chunk = doc_repo.create_chunk(chunk_db)
             stored_chunks.append(stored_chunk)
 
-        logger.info(
-            f"Stored {len(stored_chunks)} chunks for document {stored_document.file_name}"
+        title = (
+            stored_document.metadata.frontmatter_metadata.title
+            if stored_document.metadata.frontmatter_metadata
+            else "Unknown"
         )
+
+        logger.info(f"Stored {len(stored_chunks)} chunks for document {title}")
 
     except Exception as e:
         logger.error(f"Error storing pipeline results to database: {e}")

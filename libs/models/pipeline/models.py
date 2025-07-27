@@ -4,13 +4,12 @@ This module provides a unified interface to all pipeline-related models.
 """
 
 # Import all models from their respective modules
-from .documents import (
-    DocumentChunk,
+from ..documents import (
+    TextChunk,
     EmbeddedChunk,
     ProcessedDocument,
-    ProcessedContent,
     ParsedContent,
-    DocumentChunk,
+    TextChunk,
 )
 from .metadata import FileMetadata, FrontmatterMetadata, DocumentMetadata
 from .processor import PipelineResult, PipelineStatus, PipelineCallback
@@ -22,7 +21,7 @@ __all__ = [
     "PipelineConfig",
     "FileEvent",
     "FileEventType",
-    "DocumentChunk",
+    "TextChunk",
     "EmbeddedChunk",
     "ProcessedDocument",
     "PipelineResult",
@@ -33,5 +32,5 @@ __all__ = [
     "DocumentMetadata",
     "ProcessedContent",
     "ParsedContent",
-    "DocumentChunk",
+    "TextChunk",
 ]
