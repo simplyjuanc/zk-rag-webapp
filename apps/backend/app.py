@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 import logging
-from apps.backend.handler.github import GithubHandler
+from apps.backend.handler.github_handler import GithubHandler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer

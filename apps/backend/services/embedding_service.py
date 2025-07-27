@@ -3,7 +3,7 @@ from pathlib import Path
 import logging
 from dependency_injector.wiring import inject, Provide
 from libs.storage.repositories.document import DocumentRepository
-from libs.pipeline.pipeline import DataPipeline, pipeline_db_storage_callback_factory
+from libs.pipeline.pipeline import DataPipeline
 
 logger = logging.getLogger(__name__)
 

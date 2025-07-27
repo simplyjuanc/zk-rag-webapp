@@ -1,5 +1,5 @@
-from apps.backend.handler.github import GithubHandler
-from apps.backend.services.document import DocumentService
+from apps.backend.handler.github_handler import GithubHandler
+from apps.backend.services.document_service import DocumentService
 from dependency_injector import containers, providers
 
 from libs.storage.db import get_db_session

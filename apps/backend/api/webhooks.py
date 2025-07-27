@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 import logging
 from starlette.responses import JSONResponse
 from dependency_injector.wiring import inject, Provide
-from apps.backend.handler.github import GithubHandler
+from apps.backend.handler.github_handler import GithubHandler
 from libs.di.container import Container
 
 logger = logging.getLogger(__name__)

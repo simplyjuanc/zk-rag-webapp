@@ -36,5 +36,5 @@ class DocumentService:
     async def process_modified_files(self, files: List[str]) -> None:
         pass
 
-    async def remove_documents(self, files: List[str]) -> None:
+    async def remove_documents_from_gh_path(self, files: List[str]) -> None:
         pass

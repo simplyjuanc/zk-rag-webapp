@@ -8,25 +8,37 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from dependency_injector.wiring import inject, Provide
+from apps.backend.services import document_service
 from config import settings
 from libs.models.third_party.github import (
     GithubWebhookHeaders,
     GithubEventTypes,
     PushEvent,
 )
-from apps.backend.services.document import DocumentService
+from apps.backend.services.document_service import DocumentService
+from libs.pipeline.pipeline import DataPipeline
 
 
 logger = logging.getLogger(__name__)
+
+
+class EmbeddingJob:
+    def schedule_job(self, files: List[str]) -> None:
+        """Schedule a job to process the modified files."""
+        # This method should be implemented to handle the scheduling logic
+        # For now, we will just log the files
+        logger.info(f"Scheduling job for files: {files}")
 
 
 class GithubHandler:
     @inject
     def __init__(
         self,
-        embedding_service: DocumentService = Provide["Container.embedding_service"],
+        document_service: DocumentService = Provide["Container.document_service"],
+        embedding_job: EmbeddingJob = EmbeddingJob(),
     ):
-        self.embedding_service = embedding_service
+        self.document_service = document_service
+        self.embedding_job = embedding_job
 
     async def handle_event(self, request: Request) -> JSONResponse:
         try:
@@ -97,23 +109,22 @@ class GithubHandler:
             if commit.removed:
                 all_removed.extend(commit.removed)
 
-        files_modified = list(set(all_modified))
-        files_removed = list(set(all_removed))
-        md_files_modified = [f for f in files_modified if f.endswith(".md")]
-        md_files_removed = [f for f in files_removed if f.endswith(".md")]
+        md_files_modified = self._extract_unique_md_files(all_modified)
+        md_files_removed = self._extract_unique_md_files(all_removed)
 
         logger.info(
             f"Received push event with {len(commits)} commits, "
-            f"{len(md_files_modified)} markdown files modified, "
-            f"{len(md_files_removed)} markdown files removed."
+            f"{len(md_files_modified)} markdown files to update, "
+            f"{len(md_files_removed)} markdown files to be removed."
         )
         if md_files_modified:
             logger.info(f"Processing {len(md_files_modified)} modified markdown files")
-            # processed_files = await self.pipeline_service.process_files(md_files_modified)
-            # logger.info(f"Successfully processed {len(processed_files)} files: {processed_files}")
-
-        # Handle removed files (you might want to delete them from the database)
+            self.embedding_job.schedule_job(md_files_modified)
         if md_files_removed:
+            _ = self.document_service.remove_documents_from_gh_path(md_files_removed)
             logger.info(f"Files removed: {md_files_removed}")
-            # TODO: Implement deletion from database if needed
-            # await self.embedding_service.remove_files(md_files_removed)
+
+    def _extract_unique_md_files(self, all_modified: List[str]) -> List[str]:
+        files_modified = list(set(all_modified))
+        md_files_modified = [f for f in files_modified if f.endswith(".md")]
+        return md_files_modified
