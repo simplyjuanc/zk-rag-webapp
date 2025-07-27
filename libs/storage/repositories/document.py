@@ -1,7 +1,8 @@
 from typing import List, Optional, Annotated
+from httpx import delete
 from sqlalchemy.orm import Session
 from libs.storage.tables.documents import Document, DocumentChunk
-from libs.models.Document import DocumentDB, DocumentChunkDB
+from libs.models.Documents import DocumentDB, DocumentChunkDB
 from libs.storage.db import get_db_session
 from fastapi import Depends
 
@@ -38,13 +39,10 @@ class DocumentRepository:
         )
         return [DocumentChunkDB.model_validate(chunk.__dict__) for chunk in chunks]
 
-
-def get_document_repository(
-    session: Session = Depends(get_db_session),
-) -> DocumentRepository:
-    return DocumentRepository(session)
-
-
-document_repo_injection = Annotated[
-    DocumentRepository, Depends(get_document_repository)
-]
+    def delete_document(self, doc_id: str) -> DocumentDB:
+        doc = self.session.query(Document).filter(Document.id == doc_id).first()
+        if not doc:
+            raise ValueError(f"Document with id {doc_id} not found")
+        self.session.delete(doc)
+        self.session.commit()
+        return DocumentDB.model_validate(doc.__dict__)

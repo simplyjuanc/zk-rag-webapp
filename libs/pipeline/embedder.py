@@ -4,25 +4,14 @@ from typing import List
 from datetime import datetime, timezone
 import httpx
 import numpy as np
-from pydantic import BaseModel
 
 from libs.models.pipeline import DocumentChunk, EmbeddedChunk
+from libs.models.Embeddings import BatchEmbedding, Embedding
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_EMBEDDING_SIZE = 1536
 BASE_EMBEDDING = [0.0] * DEFAULT_EMBEDDING_SIZE
-
-
-class EmbeddingResult(BaseModel):
-    embedding: List[float]
-    embedding_model: str
-    embedding_created_at: datetime
-
-
-class EmbeddingBatch(BaseModel):
-    embeddings: List[EmbeddingResult]
-    batch_created_at: datetime
 
 
 class EmbeddingService:
@@ -35,7 +24,7 @@ class EmbeddingService:
         self.model = model
         self.client = httpx.AsyncClient(timeout=30.0)
 
-    async def embed_text(self, text: str) -> EmbeddingResult:
+    async def embed_text(self, text: str) -> Embedding:
         try:
             response = await self.client.post(
                 f"{self.base_url}/api/embeddings",
@@ -57,7 +46,7 @@ class EmbeddingService:
                 raise ValueError("Embedding contains non-numeric values") from conv_e
 
             logger.debug(f"Generated embedding of length {len(embedding)}")
-            return EmbeddingResult(
+            return Embedding(
                 embedding=embedding_floats,
                 embedding_model=self.model,
                 embedding_created_at=datetime.now(timezone.utc),
@@ -66,8 +55,8 @@ class EmbeddingService:
             logger.error(f"Error generating embedding: {e}")
             raise
 
-    async def embed_batch(self, texts: List[str]) -> EmbeddingBatch:
-        embeddings: List[EmbeddingResult] = []
+    async def embed_batch(self, texts: List[str]) -> BatchEmbedding:
+        embeddings: List[Embedding] = []
         batch_created_at = datetime.now(timezone.utc)
 
         for i, text in enumerate(texts):
@@ -81,14 +70,14 @@ class EmbeddingService:
             except Exception as e:
                 logger.error(f"Error embedding text {i}: {e}")
                 embeddings.append(
-                    EmbeddingResult(
+                    Embedding(
                         embedding=BASE_EMBEDDING,
                         embedding_model=self.model,
                         embedding_created_at=datetime.now(timezone.utc),
                     )
                 )
 
-        return EmbeddingBatch(
+        return BatchEmbedding(
             embeddings=embeddings,
             batch_created_at=batch_created_at,
         )
@@ -132,7 +121,7 @@ class DocumentEmbedder:
         logger.info(f"Embedded {len(embedded_chunks)} chunks")
         return embedded_chunks
 
-    async def embed_query(self, query: str) -> EmbeddingResult:
+    async def embed_query(self, query: str) -> Embedding:
         return await self.embedder.embed_text(query)
 
     async def close(self) -> None:
@@ -142,7 +131,7 @@ class DocumentEmbedder:
 
 class SimilarityCalculator:
     async def calculate_similarity(
-        self, embedding1: EmbeddingResult, embedding2: EmbeddingResult
+        self, embedding1: Embedding, embedding2: Embedding
     ) -> float:
         """Calculate cosine similarity between two embeddings."""
         try:
@@ -163,7 +152,7 @@ class SimilarityCalculator:
             return 0.0
 
     async def calculate_similarities(
-        self, query_embedding: EmbeddingResult, embeddings: List[EmbeddingResult]
+        self, query_embedding: Embedding, embeddings: List[Embedding]
     ) -> List[float]:
         """Calculate similarities between a query embedding and a list of embeddings."""
         similarities = []

@@ -8,8 +8,8 @@ from pathlib import Path
 
 from libs.models.pipeline import EmbeddedChunk, DocumentChunk
 from libs.models.pipeline.documents import ProcessedDocument
+from libs.models.Embeddings import BatchEmbedding
 from libs.pipeline.embedder import (
-    EmbeddingBatch,
     EmbeddingService,
     SimilarityCalculator,
 )
@@ -80,7 +80,7 @@ async def test_processor() -> tuple[ProcessedDocument, list[DocumentChunk]]:
         os.unlink(temp_file)
 
 
-async def test_embedder() -> EmbeddingBatch | None:
+async def test_embedder() -> BatchEmbedding | None:
     """Test the document embedder."""
     print("\nTesting DocumentEmbedder...")
 

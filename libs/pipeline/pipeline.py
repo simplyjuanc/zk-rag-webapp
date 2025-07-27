@@ -22,7 +22,7 @@ from .embedder import EmbeddingService, DocumentEmbedder, SimilarityCalculator
 # --- DB Storage Callback for Pipeline ---
 from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
-from libs.models.Document import DocumentDB, DocumentChunkDB
+from libs.models.Documents import DocumentDB, DocumentChunkDB
 from libs.models.pipeline.processor import PipelineResult
 
 logger = logging.getLogger(__name__)
@@ -202,7 +202,7 @@ def pipeline_db_storage_callback_factory() -> Callable[
             return
         # Map ProcessedDocument to DocumentDB fields
         # Use the Pydantic DocumentDB model for mapping, leveraging its validation and defaults.
-        from libs.models.Document import DocumentDB
+        from libs.models.Documents import DocumentDB
 
         # Compose a dict with all possible fields, letting Pydantic handle missing/optional ones.
         file_meta = (

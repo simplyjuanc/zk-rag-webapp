@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 from libs.models.pipeline import ProcessedDocument, EmbeddedChunk
-from libs.models.Document import DocumentDB, DocumentChunkDB
+from libs.models.Documents import DocumentDB, DocumentChunkDB
 
 
 def map_processed_document_to_db(processed_doc: ProcessedDocument) -> DocumentDB:

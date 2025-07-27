@@ -11,8 +11,6 @@ from config import settings
 
 
 class Container(containers.DeclarativeContainer):
-    """Dependency injection container for the application."""
-
     # Configuration
     config = providers.Configuration()
 
@@ -21,7 +19,6 @@ class Container(containers.DeclarativeContainer):
 
     # Repositories
     document_repo = providers.Factory(DocumentRepository, session=db_session)
-
     user_repo = providers.Factory(UserRepository, session=db_session)
 
     # Pipeline Configuration
