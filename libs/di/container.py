@@ -8,6 +8,7 @@ from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
 from libs.storage.repositories.user import UserRepository
 from libs.pipeline.pipeline import DataPipeline
+from libs.pipeline.embedder import DocumentEmbedder, SimilarityCalculator
 from libs.models.pipeline.config import PipelineConfig
 from config import settings
 
@@ -28,18 +29,6 @@ class Container(containers.DeclarativeContainer):
         GithubClient,
     )
 
-    # Pipeline
-    pipeline_config = providers.Singleton(
-        PipelineConfig,
-        watch_directory="",  # Not used for manual processing
-        ollama_url=str(settings.ollama_url),
-        embedding_model=settings.llm_embeddings_model,
-        chunk_size=1000,
-        chunk_overlap=200,
-    )
-
-    pipeline = providers.Singleton(DataPipeline, config=pipeline_config)
-
     # Services
     embedding_service: providers.Singleton[EmbeddingService] = providers.Singleton(
         EmbeddingService,
@@ -48,7 +37,6 @@ class Container(containers.DeclarativeContainer):
         DocumentService,
         document_repo=document_repo,
         embedding_service=embedding_service,
-        pipeline=pipeline,
     )
 
     # Handlers
@@ -57,6 +45,29 @@ class Container(containers.DeclarativeContainer):
         document_service=document_service,
         embedding_service=embedding_service,
         github_client=github_client,
+    )
+
+    # Pipeline
+    pipeline_config = providers.Singleton(
+        PipelineConfig,
+        watch_directory="assets",
+        ollama_url=str(settings.ollama_url),
+        embedding_model=settings.llm_embeddings_model,
+        chunk_size=1000,
+        chunk_overlap=200,
+    )
+
+    document_embedder = providers.Singleton(
+        DocumentEmbedder,
+        embedder=embedding_service,
+    )
+    similarity_calculator = providers.Singleton(SimilarityCalculator)
+
+    pipeline = providers.Singleton(
+        DataPipeline,
+        config=pipeline_config,
+        document_embedder=document_embedder,
+        similarity_calculator=similarity_calculator,
     )
 
 

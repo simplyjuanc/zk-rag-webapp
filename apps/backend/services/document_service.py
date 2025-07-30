@@ -31,11 +31,9 @@ class DocumentService:
         self,
         document_repo: DocumentRepository = Provide["Container.document_repo"],
         embedding_service: EmbeddingService = Provide["Container.embedding_service"],
-        pipeline: DataPipeline = Provide["Container.pipeline"],
     ) -> None:
         self.document_repo = document_repo
         self.embedding_service = embedding_service
-        self.pipeline = pipeline
         self.repo_base_path = Path.cwd()
 
     async def process_md_files(self, contents: List[str]) -> List[Document]:

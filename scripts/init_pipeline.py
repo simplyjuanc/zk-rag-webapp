@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 
 # Add the project root to the Python path
-sys.path.insert(0, str(Path(__file__).parent))
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from libs.models.documents import Document
 from libs.models.pipeline import FileEventType
@@ -14,6 +15,7 @@ from libs.pipeline import DataPipeline
 from libs.models.pipeline import PipelineConfig, PipelineResult
 from libs.storage.repositories.document import DocumentRepository
 from libs.storage.db import get_db_session
+from libs.di.container import container
 
 
 logging.basicConfig(
@@ -61,28 +63,28 @@ async def store_pipeline_results_to_db(result: PipelineResult) -> None:
             session.close()
 
 
-async def main() -> None:
-    watch_directory = "assets"
-    ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
-    embedding_model = "nomic-embed-text"
+EMBEDDING_MODEL = "nomic-embed-text"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+WATCH_DIRECTORY = "assets"
 
-    # Create pipeline configuration
-    config = PipelineConfig(
-        watch_directory=watch_directory,
-        ollama_url=ollama_url,
-        embedding_model=embedding_model,
-        chunk_size=100,
-        chunk_overlap=200,
+
+async def main() -> None:
+    container.wire(
+        modules=[
+            "libs.pipeline.pipeline",
+            "libs.pipeline.embedder",
+            "apps.backend.services.embedding_service",
+        ]
     )
 
-    # Create pipeline
-    pipeline = DataPipeline(config=config)
+    # Get the pipeline from the DI container (dependencies auto-injected)
+    pipeline = container.pipeline()
 
     try:
         logger.info("Starting data pipeline...")
-        logger.info(f"Watching directory: {watch_directory}")
-        logger.info(f"Using Ollama at: {ollama_url}")
-        logger.info(f"Using embedding model: {embedding_model}")
+        logger.info(f"Watching directory: {WATCH_DIRECTORY}")
+        logger.info(f"Using Ollama at: {OLLAMA_URL}")
+        logger.info(f"Using embedding model: {EMBEDDING_MODEL}")
 
         # Start the pipeline with database storage callback
         await pipeline.start(callback=store_pipeline_results_to_db)

@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Callable, Awaitable
 
+from dependency_injector.wiring import inject, Provide
 from apps.backend.services.embedding_service import EmbeddingService
 from libs.models.pipeline import (
     PipelineConfig,
@@ -12,18 +13,12 @@ from libs.models.pipeline import (
     PipelineStatus,
     PipelineCallback,
 )
-from libs.models.pipeline.metadata import (
-    DocumentMetadata,
-    FileMetadata,
-    FrontmatterMetadata,
-)
 from libs.utils.document_processor.document_processor import DocumentProcessor
 from .watchers.file_watcher import FileWatcher
 
 from .watchers.source_watcher import SourceWatcher
 from .embedder import DocumentEmbedder, SimilarityCalculator
 
-# --- DB Storage Callback for Pipeline ---
 from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
 from libs.models.documents import Document
@@ -35,20 +30,23 @@ logger = logging.getLogger(__name__)
 class DataPipeline:
     """Main data pipeline that orchestrates file watching, processing, and embedding."""
 
+    @inject
     def __init__(
         self,
         config: PipelineConfig,
+        document_embedder: DocumentEmbedder = Provide["Container.document_embedder"],
+        similarity_calculator: SimilarityCalculator = Provide[
+            "Container.similarity_calculator"
+        ],
     ):
         self.config = config
 
         self.file_watcher: SourceWatcher = FileWatcher(self.config.watch_directory)
         self.processor = DocumentProcessor()
 
-        # TODO: These services should be injected rather than instantiated here
-        #  It's generating issues with circular imports and handling events
-        self.ollama_embedder = EmbeddingService()
-        self.document_embedder = DocumentEmbedder(self.ollama_embedder)
-        self.similarity_calculator = SimilarityCalculator()
+        # Use injected services
+        self.document_embedder = document_embedder
+        self.similarity_calculator = similarity_calculator
 
         self.is_running = False
         self.processing_queue: asyncio.Queue[FileEvent] = asyncio.Queue()
