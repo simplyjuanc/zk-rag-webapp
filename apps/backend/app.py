@@ -1,5 +1,9 @@
 from collections.abc import AsyncGenerator
+from enum import Enum
 import logging
+
+from config import settings
+import sentry_sdk
 from apps.backend.handler.github_handler import GithubHandler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,9 +18,8 @@ from libs.di.container import container
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level="INFO", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 
@@ -33,6 +36,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             "apps.backend.services.user",
         ]
     )
+
+    # See https://docs.sentry.io/platforms/python/ for general documentation and
+    # https://docs.sentry.io/platforms/python/data-management/data-collected/ for info on data collected
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.environment,
+        send_default_pii=True,
+        traces_sample_rate=1.0,
+        profile_session_sample_rate=1.0,
+        profile_lifecycle="trace",
+    )
+
+    sentry_sdk.set_level("info")
+
     yield
 
 

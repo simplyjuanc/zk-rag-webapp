@@ -22,7 +22,7 @@ class EmbeddingService:
     async def generate_embedding(self, text: str) -> Embedding:
         try:
             response = await self.client.post(
-                f"{self.base_url}/api/embeddings",
+                f"{self.base_url}api/embeddings",
                 json={"model": self.model, "prompt": text},
             )
             response.raise_for_status()

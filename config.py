@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     allowed_hosts: list[str] = ["*"]
     cors_origins: list[AnyHttpUrl] = []
 
+    sentry_dsn: str
+
     # External Services
     zk_repo_secret: str
     open_ai_api_key: str
