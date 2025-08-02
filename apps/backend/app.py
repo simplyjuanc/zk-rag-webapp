@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator
-from enum import Enum
 import logging
 
 from config import settings
@@ -19,7 +18,7 @@ from libs.di.container import container
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 logging.basicConfig(
-    level="INFO", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.WARN, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 

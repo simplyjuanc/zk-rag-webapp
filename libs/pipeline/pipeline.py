@@ -21,7 +21,7 @@ from .embedder import DocumentEmbedder, SimilarityCalculator
 
 from libs.storage.db import get_db_session
 from libs.storage.repositories.document import DocumentRepository
-from libs.models.documents import Document
+from libs.models.documents import AnalysedDocument
 from libs.models.pipeline.processor import PipelineResult
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ class DataPipeline:
             document_chunks
         )
 
-        logger.info(f"Processed file successfully: {file_path} ({event_type})")
+        logger.info(f"Pipelined successfully processed: {file_path} ({event_type})")
         result = PipelineResult.from_processing(
             document=processed_document, chunks=embedded_chunks, event_type=event_type
         )
@@ -204,7 +204,7 @@ def pipeline_db_storage_callback_factory() -> Callable[
 
         # Compose a dict with all possible fields, letting Pydantic handle missing/optional ones.
         # Create Document object using proper Pydantic validation
-        embedded_document = Document.from_document_and_embeddings(
+        embedded_document = AnalysedDocument.from_document_and_embeddings(
             document=result.document, embedded_chunks=result.chunks or []
         )
 

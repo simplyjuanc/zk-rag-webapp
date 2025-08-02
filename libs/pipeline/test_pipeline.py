@@ -6,14 +6,15 @@ import tempfile
 import os
 from pathlib import Path
 
+from apps.backend.services.embedding_service import EmbeddingService
+from libs.models.documents import Document
 from libs.models.pipeline import EmbeddedChunk, TextChunk
-from libs.models.documents import ProcessedDocument
 from libs.models.embeddings import EmbeddingsBatch
 from libs.pipeline.embedder import SimilarityCalculator
 from libs.utils.document_processor.document_processor import DocumentProcessor
 
 
-async def test_processor() -> tuple[ProcessedDocument, list[TextChunk]]:
+async def test_processor() -> tuple[Document, list[TextChunk]]:
     """Test the document processor."""
     print("Testing DocumentProcessor...")
     test_content = """---
@@ -133,18 +134,13 @@ async def test_pipeline_integration() -> bool:
 
         for i, chunk in enumerate(test_chunks):
             embedded_chunk = EmbeddedChunk(
-                id=chunk.id,
+                id=chunk.id or f"chunk-{i}",
+                document_id=document.id,
                 content=chunk.content,
                 content_hash=chunk.content_hash,
                 chunk_index=chunk.chunk_index,
-                start_line=chunk.start_line,
-                end_line=chunk.end_line,
                 word_count_estimate=chunk.word_count_estimate,
-                embedding=embeddings.embeddings[
-                    i % len(embeddings.embeddings)
-                ].embedding,
-                embedding_model="nomic-embed-text",
-                embedding_created_at=embeddings.created_at,
+                embedding=embeddings.embeddings[i] if i < len(embeddings.embeddings) else None,
             )
             embedded_chunks.append(embedded_chunk)
 

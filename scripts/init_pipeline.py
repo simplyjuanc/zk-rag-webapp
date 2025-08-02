@@ -9,7 +9,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from libs.models.documents import Document
+from libs.models.documents import AnalysedDocument
 from libs.models.pipeline import FileEventType
 from libs.pipeline import DataPipeline
 from libs.models.pipeline import PipelineConfig, PipelineResult
@@ -19,7 +19,7 @@ from libs.di.container import container
 
 
 logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ async def store_pipeline_results_to_db(result: PipelineResult) -> None:
     doc_repo = DocumentRepository(session)
 
     try:
-        mapped_document = Document.from_document_and_embeddings(
+        mapped_document = AnalysedDocument.from_document_and_embeddings(
             result.document, result.chunks
         )
         stored_document = doc_repo.create_document(mapped_document)

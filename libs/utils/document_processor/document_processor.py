@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 import logging
 
-from libs.models.documents import TextChunk, ProcessedDocument
+from libs.models.documents import TextChunk, Document
 from libs.models.pipeline.metadata import DocumentMetadata
 from .metadata_extractor import MetadataValidator
 from .content_parser import MarkdownParser
@@ -22,7 +22,7 @@ class DocumentProcessor:
         self.metadata_extractor = MetadataValidator()
         self.content_parser = MarkdownParser()
 
-    def process_document(self, file_path: Path) -> ProcessedDocument:
+    def process_document(self, file_path: Path) -> Document:
         """Process a Markdown document and extract all relevant information."""
         try:
             content = file_path.read_text(encoding="utf-8")
@@ -31,7 +31,7 @@ class DocumentProcessor:
                 content, self.metadata_extractor
             )
 
-            result = ProcessedDocument(
+            result = Document(
                 id=uuid.uuid4().hex,
                 metadata=DocumentMetadata(
                     file_metadata=file_metadata,

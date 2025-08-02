@@ -5,7 +5,7 @@ import logging
 import uuid
 from dependency_injector.wiring import inject, Provide
 from apps.backend.services.embedding_service import EmbeddingService
-from libs.models.documents import Document, EmbeddedChunk, TextChunk, ProcessedDocument
+from libs.models.documents import AnalysedDocument, EmbeddedChunk, TextChunk, Document
 from libs.storage.repositories.document import DocumentRepository
 from libs.pipeline.pipeline import DataPipeline
 
@@ -36,7 +36,7 @@ class DocumentService:
         self.embedding_service = embedding_service
         self.repo_base_path = Path.cwd()
 
-    async def process_md_files(self, contents: List[str]) -> List[Document]:
+    async def process_md_files(self, contents: List[str]) -> List[AnalysedDocument]:
         documents = [self._clean_md_files(f) for f in contents]
         document_titles = [
             f.metadata.frontmatter_metadata.title
@@ -57,8 +57,9 @@ class DocumentService:
             await self._add_embeddings_to_chunks(doc) for doc in chunked_documents
         ]
 
+        logging.info(f"---> {document_ids}, {embedded_document_chunks}, {documents}")
         completed_documents = [
-            Document(
+            AnalysedDocument(
                 id=doc_id if doc_id else uuid.uuid4().hex,
                 metadata=doc.metadata,
                 created_at=doc.created_at,
@@ -83,7 +84,7 @@ class DocumentService:
             "This method should be implemented to remove documents."
         )
 
-    def _clean_md_files(self, file: str) -> ProcessedDocument:
+    def _clean_md_files(self, file: str) -> Document:
         raise NotImplementedError(
             "This method should be implemented to process modified files."
         )
@@ -108,7 +109,7 @@ class DocumentService:
         logger.info(f"Embedded {len(embedded_chunks)} chunks")
         return embedded_chunks
 
-    def _chunk_document(self, doc: ProcessedDocument) -> List[TextChunk]:
+    def _chunk_document(self, doc: Document) -> List[TextChunk]:
         """
         Chunk a document into smaller parts for processing.
         This is a placeholder implementation and should be replaced with actual logic.

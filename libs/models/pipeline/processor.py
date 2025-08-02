@@ -4,14 +4,14 @@ from datetime import datetime, timezone
 from typing import Awaitable, Callable, List, Optional
 from pydantic import BaseModel
 
-from ..documents import ProcessedDocument, EmbeddedChunk
+from ..documents import Document, EmbeddedChunk
 from .events import FileEventType
 
 
 class PipelineResult(BaseModel):
     """Result from processing a file through the pipeline."""
 
-    document: Optional[ProcessedDocument] = None
+    document: Optional[Document] = None
     chunks: Optional[List[EmbeddedChunk]] = None
     file_path: Optional[str] = None
     event_type: FileEventType
@@ -20,7 +20,7 @@ class PipelineResult(BaseModel):
     @classmethod
     def from_processing(
         cls,
-        document: ProcessedDocument,
+        document: Document,
         chunks: List[EmbeddedChunk],
         event_type: FileEventType,
     ) -> "PipelineResult":

@@ -7,7 +7,7 @@ This module provides a unified interface to all pipeline-related models.
 from ..documents import (
     TextChunk,
     EmbeddedChunk,
-    ProcessedDocument,
+    Document,
     ParsedContent,
     TextChunk,
 )
@@ -23,7 +23,7 @@ __all__ = [
     "FileEventType",
     "TextChunk",
     "EmbeddedChunk",
-    "ProcessedDocument",
+    "Document",
     "PipelineResult",
     "PipelineStatus",
     "PipelineCallback",

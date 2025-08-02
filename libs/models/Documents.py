@@ -42,7 +42,7 @@ class EmbeddedChunk(TextChunk):
         )
 
 
-class ProcessedDocument(BaseModel):
+class Document(BaseModel):
     id: str
     metadata: DocumentMetadata
     content: str
@@ -52,7 +52,7 @@ class ProcessedDocument(BaseModel):
     deleted_at: Optional[datetime] = None
 
 
-class Document(ProcessedDocument):
+class AnalysedDocument(Document):
     embedded_chunks: List[EmbeddedChunk] = []
 
     def __str__(self) -> str:
@@ -60,8 +60,8 @@ class Document(ProcessedDocument):
 
     @classmethod
     def from_document_and_embeddings(
-        cls, document: ProcessedDocument, embedded_chunks: List[EmbeddedChunk]
-    ) -> "Document":
+        cls, document: Document, embedded_chunks: List[EmbeddedChunk]
+    ) -> "AnalysedDocument":
         return cls(
             id=document.id,
             metadata=document.metadata,

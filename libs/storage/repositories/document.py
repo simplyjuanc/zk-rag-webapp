@@ -1,20 +1,14 @@
-from ast import Not
-from calendar import c
-from typing import List, Optional, Annotated
-from httpx import delete
+from typing import List, Optional
 from sqlalchemy.orm import Session
-from libs.models.embeddings import EmbeddingsBatch
 from libs.storage.tables.documents import Document as DocumentDB
-from libs.models.documents import Document, EmbeddedChunk, TextChunk, ProcessedDocument
-from libs.storage.db import get_db_session
-from fastapi import Depends
+from libs.models.documents import AnalysedDocument, EmbeddedChunk, Document
 
 
 class DocumentRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def upsert_document(self, document: Document) -> Document:
+    def upsert_document(self, document: AnalysedDocument) -> AnalysedDocument:
         try:
             existing_doc = self.get_full_document(document.id)
             if not existing_doc:
@@ -38,7 +32,7 @@ class DocumentRepository:
         finally:
             self.session.close()
 
-    def create_document(self, document: Document) -> Document:
+    def create_document(self, document: AnalysedDocument) -> AnalysedDocument:
         try:
             doc_data = document.model_dump(exclude_unset=True, exclude={"chunks"})
             doc = DocumentDB(**doc_data)
@@ -59,18 +53,18 @@ class DocumentRepository:
         finally:
             self.session.close()
 
-    def get_full_document(self, doc_id: str) -> Document:
+    def get_full_document(self, doc_id: str) -> AnalysedDocument:
         raise NotImplementedError()
 
-    def get_document_by_id(self, doc_id: str) -> Optional[ProcessedDocument]:
+    def get_document_by_id(self, doc_id: str) -> Optional[Document]:
         doc = self.session.query(DocumentDB).filter(DocumentDB.id == doc_id).first()
-        return ProcessedDocument.model_validate(doc.__dict__) if doc else None
+        return Document.model_validate(doc.__dict__) if doc else None
 
-    def get_document_by_title(self, title: str) -> Optional[ProcessedDocument]:
+    def get_document_by_title(self, title: str) -> Optional[Document]:
         doc = self.session.query(DocumentDB).filter(DocumentDB.title == title).first()
-        return ProcessedDocument.model_validate(doc.__dict__) if doc else None
+        return Document.model_validate(doc.__dict__) if doc else None
 
-    def save_documents(self, document: Document) -> Document:
+    def save_documents(self, document: AnalysedDocument) -> AnalysedDocument:
         raise NotImplementedError()
 
     def get_chunks_by_document_id(self, doc_id: str) -> List[EmbeddedChunk]:

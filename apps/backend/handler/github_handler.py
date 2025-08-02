@@ -43,25 +43,15 @@ class GithubHandler:
                 status_code=HTTPStatus.BAD_REQUEST, detail="Invalid webhook headers"
             )
         payload = await request.body()
-        self._verify_github_signature(
+        self._verify_signature(
             payload, settings.zk_repo_secret, webhook_headers.x_hub_signature_256
         )
-
-        if webhook_headers.x_github_event == GithubEventTypes.PING:
-            logger.info(f"GitHub ping event received.")
-        if webhook_headers.x_github_event != GithubEventTypes.PUSH:
-            logger.info(
-                f"Unsupported GitHub event type: {webhook_headers.x_github_event}"
-            )
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail="Unsupported GitHub event type",
-            )
+        self._validate_headers(webhook_headers)
 
         push_event = PushEvent.model_validate_json(payload)
-        await self._handle_github_push_event(push_event)
+        await self._handle_push_event(push_event)
 
-    async def _handle_github_push_event(self, event: PushEvent) -> None:
+    async def _handle_push_event(self, event: PushEvent) -> None:
         commits = event.commits
         all_modified: List[str] = []
         all_removed: List[str] = []
@@ -96,7 +86,7 @@ class GithubHandler:
             )
             logger.info(f"Files removed: {removed_md_filelist}")
 
-    def _verify_github_signature(
+    def _verify_signature(
         self, payload_body: bytes, secret_token: str, signature: str | None
     ) -> None:
         """Verify that the payload was sent from GitHub by validating SHA256.
@@ -123,6 +113,18 @@ class GithubHandler:
             raise HTTPException(
                 status_code=HTTPStatus.FORBIDDEN,
                 detail="Github request signatures didn't match!",
+            )
+
+    def _validate_headers(self, webhook_headers: GithubWebhookHeaders) -> None:
+        if webhook_headers.x_github_event == GithubEventTypes.PING:
+            logger.info(f"GitHub ping event received.")
+        if webhook_headers.x_github_event != GithubEventTypes.PUSH:
+            logger.info(
+                f"Unsupported GitHub event type: {webhook_headers.x_github_event}"
+            )
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail="Unsupported GitHub event type",
             )
 
     def _extract_unique_md_files(self, all_modified: List[str]) -> List[str]:
